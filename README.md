@@ -92,6 +92,27 @@ named numeric series — *what* to plot, never how it is painted. Adapters draw 
 own charting library; an adapter that can't declares the `Chart` capability unsupported, so
 the use case fails fast instead of dropping it silently.
 
+### Automatic pagination (built for mass printing)
+
+Long documents (a 30-40 page contract) flow across pages automatically. Because the core
+depends on no PDF library, it cannot measure glyphs itself — so measurement is a **port**,
+`ITextMeasurer`, supplied by the adapter; a dependency-free `ApproximateTextMeasurer` is the
+built-in default. The `DocumentPaginator` then:
+
+- fills pages top-to-bottom, **splitting long paragraphs at word boundaries** and **long
+  tables at row boundaries** (repeating header rows), honouring explicit page breaks;
+- **streams pages lazily** (`IEnumerable` + `yield`) so memory stays flat — a 40-page
+  agreement or a mass-print run of thousands never holds more than one page at a time;
+- resolves **page-number fields** (`PageNumber("Page {page} of {pages}")`) once the totals
+  are known — the total page count is computed up front only when a field references it.
+
+Measurement runs on `ReadOnlySpan<char>` (no per-word allocations on the hot path), keeping
+the time/RAM overhead minimal for high-volume workloads.
+
+```csharp
+.Footer(f => f.PageNumber("Page {page} of {pages}", HorizontalAlignment.Center))
+```
+
 **Reusable blocks** are first-class — as interfaces (`IBlockComponent` /
 `IBlockComponent<TModel>`) for testable, injectable components, or as inline delegates
 (`Component(dto, d => …)`) for quick cases. A component maps a print DTO to blocks and can
@@ -136,6 +157,9 @@ See [`samples/FluentPdf.Samples`](samples/FluentPdf.Samples) for the full, compi
   statement in turn, and a separate `BoardOnePagerTemplate` re-composes the very same blocks
   into a one-page briefing — demonstrating blocks that are authored once and reused across
   documents.
+- **Contract** (`Contract/`) — a 30-40 page senior facility agreement with real long-form
+  legal prose, exercising **automatic pagination** (paragraph splitting), a running header
+  and a "Page X of Y" footer resolved during layout.
 
 ## Projects
 
@@ -143,7 +167,7 @@ See [`samples/FluentPdf.Samples`](samples/FluentPdf.Samples) for the full, compi
 |---------|------|
 | `FluentPdf.Kernel` | Shared DDD building blocks: `Result<T>`, `Error`, `ValueObject`, `Entity`, `AggregateRoot`. |
 | `FluentPdf.Domain` | The library-agnostic document model (aggregate, value objects, content elements). |
-| `FluentPdf.Application` | The fluent builder, reusable components/templates, the `IPdfRenderer` port and the rendering use case. **The package consumers reference.** |
+| `FluentPdf.Application` | The fluent builder, reusable components/templates, the `IPdfRenderer` and `ITextMeasurer` ports, the streaming `DocumentPaginator` and the rendering use case. **The package consumers reference.** |
 | `FluentPdf.Infrastructure` | Built-in adapters, incl. the `InMemoryPdfRenderer` reference implementation. |
 | `FluentPdf.Conformance` | The shared contract-test kit every adapter must pass. |
 

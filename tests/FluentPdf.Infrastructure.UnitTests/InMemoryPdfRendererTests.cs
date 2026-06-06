@@ -81,6 +81,39 @@ public sealed class InMemoryPdfRendererTests
             "series Revenue: 100, 110");
     }
 
+    [Fact]
+    public void Output_marks_page_boundaries()
+    {
+        var document = PdfDocumentBuilder.Create().Section(s => s.Paragraph("x")).Build().Value;
+
+        RenderText(document).Should().Contain("[page 1]");
+    }
+
+    [Fact]
+    public void A_footer_page_number_field_is_resolved()
+    {
+        var document = PdfDocumentBuilder.Create()
+            .Section(s => s
+                .Footer(f => f.PageNumber("Page {page} of {pages}"))
+                .Paragraph("body"))
+            .Build()
+            .Value;
+
+        RenderText(document).Should().Contain("Page 1 of 1");
+    }
+
+    [Fact]
+    public void A_paragraph_longer_than_a_page_paginates_onto_several_pages()
+    {
+        var longText = string.Join(" ", Enumerable.Repeat("clause", 4000));
+        var document = PdfDocumentBuilder.Create()
+            .Section(s => s.Paragraph(longText))
+            .Build()
+            .Value;
+
+        Renderer.Render(document).Value.PageCount.Should().BeGreaterThan(1);
+    }
+
     [Theory]
     [InlineData(0, 1)]
     [InlineData(2, 3)]

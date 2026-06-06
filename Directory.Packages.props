@@ -3,6 +3,11 @@
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
   </PropertyGroup>
 
+  <ItemGroup Label="Runtime Dependencies">
+    <!-- Span<T>/ReadOnlySpan<T> for the netstandard2.0 target (built in on net8.0+). -->
+    <PackageVersion Include="System.Memory" Version="4.6.3" />
+  </ItemGroup>
+
   <ItemGroup Label="Test Dependencies">
     <!-- Test Framework -->
     <PackageVersion Include="xunit" Version="2.9.3" />

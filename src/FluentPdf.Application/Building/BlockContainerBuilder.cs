@@ -62,6 +62,18 @@ public abstract class BlockContainerBuilder<TSelf>
         return Self;
     }
 
+    /// <summary>
+    /// Appends a dynamic page-number field (e.g. "Page {page} of {pages}"), resolved during
+    /// pagination. Typically used inside a running header or footer.
+    /// </summary>
+    public TSelf PageNumber(
+        string format,
+        HorizontalAlignment alignment = HorizontalAlignment.Left)
+    {
+        AddBlock(Domain.Content.PageNumberField.Create(format, alignment).AsBlock());
+        return Self;
+    }
+
     /// <summary>Appends vertical whitespace of the given height, in points.</summary>
     public TSelf Spacer(double height)
     {

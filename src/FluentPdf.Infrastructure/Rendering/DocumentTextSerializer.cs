@@ -1,42 +1,50 @@
 using System.Globalization;
 using System.Text;
+using FluentPdf.Application.Layout;
 using FluentPdf.Domain;
 using FluentPdf.Domain.Content;
 
 namespace FluentPdf.Infrastructure.Rendering;
 
 /// <summary>
-/// Produces a deterministic, human-readable text projection of a document. The in-memory
-/// renderer uses it as its "rendered" payload: every visible string the document carries
-/// appears verbatim, which lets the adapter conformance suite assert that text survives
-/// rendering without a real PDF parser.
+/// Produces a deterministic, human-readable text projection of an already-paginated document.
+/// The in-memory renderer uses it as its "rendered" payload: every visible string appears
+/// verbatim, page by page, which lets the adapter conformance suite assert that text and
+/// pagination survive rendering without a real PDF parser.
 /// </summary>
 internal static class DocumentTextSerializer
 {
-    public static string Serialize(PdfDocument document)
+    /// <summary>
+    /// Serializes the document's metadata followed by each laid-out page, returning the page
+    /// count. Pages are consumed lazily from <paramref name="pages"/>, so memory stays flat.
+    /// </summary>
+    public static int Serialize(StringBuilder builder, PdfDocument document, IEnumerable<LaidOutPage> pages)
     {
-        var builder = new StringBuilder();
-
         AppendMetadata(builder, document.Metadata);
 
-        foreach (var section in document.Sections)
+        var count = 0;
+
+        foreach (var page in pages)
         {
-            if (section.Header is not null)
+            count++;
+            builder.AppendLine($"[page {page.Number}]");
+
+            if (page.Header.Count > 0)
             {
                 builder.AppendLine("[header]");
-                AppendBlocks(builder, section.Header.Blocks);
+                AppendBlocks(builder, page.Header);
             }
 
-            AppendBlocks(builder, section.Blocks);
+            AppendBlocks(builder, page.Body);
 
-            if (section.Footer is not null)
+            if (page.Footer.Count > 0)
             {
                 builder.AppendLine("[footer]");
-                AppendBlocks(builder, section.Footer.Blocks);
+                AppendBlocks(builder, page.Footer);
             }
         }
 
-        return builder.ToString();
+        return count;
     }
 
     private static void AppendMetadata(StringBuilder builder, DocumentMetadata metadata)
@@ -87,6 +95,9 @@ internal static class DocumentTextSerializer
                 break;
             case PageBreak:
                 builder.AppendLine("[page-break]");
+                break;
+            case PageNumberField field:
+                builder.AppendLine(field.Format);
                 break;
             case ImageBlock image:
                 builder.AppendLine($"[image:{image.Format} {image.Width}x{image.Height}]");

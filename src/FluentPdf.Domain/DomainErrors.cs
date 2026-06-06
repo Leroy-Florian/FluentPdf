@@ -120,9 +120,15 @@ public static class DomainErrors
             "A document must contain at least one section.");
     }
 
-    public static class Chart
+    public static class PageNumber
     {
-        public static readonly Error NoCategories = Error.Validation(
+        public static readonly Error EmptyFormat = Error.Validation(
+            "PageNumber.EmptyFormat",
+            "A page-number field must have a non-empty format.");
+    }
+
+    public static class Chart
+    {        public static readonly Error NoCategories = Error.Validation(
             "Chart.NoCategories",
             "A chart must define at least one category.");
 

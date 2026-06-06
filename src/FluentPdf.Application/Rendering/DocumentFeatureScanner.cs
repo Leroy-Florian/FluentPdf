@@ -65,6 +65,7 @@ public static class DocumentFeatureScanner
     private static PdfFeature ScanBlock(IBlock block) => block switch
     {
         Paragraph => PdfFeature.Paragraph,
+        PageNumberField => PdfFeature.Paragraph,
         Spacer => PdfFeature.Spacer,
         PageBreak => PdfFeature.PageBreak,
         ImageBlock => PdfFeature.Image,

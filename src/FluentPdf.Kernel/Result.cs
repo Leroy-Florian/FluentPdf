@@ -5,7 +5,7 @@ namespace FluentPdf.Kernel;
 /// </summary>
 public class Result
 {
-    private protected Result(bool isSuccess, Error error)
+    protected Result(bool isSuccess, Error error)
     {
         if (isSuccess && error != Error.None)
         {

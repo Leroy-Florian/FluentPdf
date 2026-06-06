@@ -119,4 +119,23 @@ public static class DomainErrors
             "Document.NoSections",
             "A document must contain at least one section.");
     }
+
+    public static class Grid
+    {
+        public static readonly Error ColumnWidthOutOfRange = Error.Validation(
+            "Grid.ColumnWidthOutOfRange",
+            "A column width must be between 1 and 12.");
+
+        public static readonly Error RowOverflow = Error.Validation(
+            "Grid.RowOverflow",
+            "The combined width of a row's columns must not exceed 12.");
+
+        public static readonly Error NoColumns = Error.Validation(
+            "Grid.NoColumns",
+            "A row must contain at least one column.");
+
+        public static readonly Error EmptyColumn = Error.Validation(
+            "Grid.EmptyColumn",
+            "A column must contain at least one block of content.");
+    }
 }

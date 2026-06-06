@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <IsPackable>false</IsPackable>
+    <RootNamespace>FluentPdf.Samples</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../../src/FluentPdf.Application/FluentPdf.Application.csproj" />
+    <ProjectReference Include="../../src/FluentPdf.Infrastructure/FluentPdf.Infrastructure.csproj" />
+  </ItemGroup>
+
+</Project>

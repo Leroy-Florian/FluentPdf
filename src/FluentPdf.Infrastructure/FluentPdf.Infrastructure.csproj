@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>FluentPdf.Infrastructure</RootNamespace>
+    <AssemblyName>FluentPdf.Infrastructure</AssemblyName>
+    <Description>Built-in adapters for FluentPdf, including an in-memory reference renderer that proves the agnostic model without depending on any third-party PDF library.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../FluentPdf.Application/FluentPdf.Application.csproj" />
+    <ProjectReference Include="../FluentPdf.Domain/FluentPdf.Domain.csproj" />
+    <ProjectReference Include="../FluentPdf.Kernel/FluentPdf.Kernel.csproj" />
+  </ItemGroup>
+
+</Project>

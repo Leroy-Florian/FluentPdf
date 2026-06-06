@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <PackageReference Include="NetArchTest.Rules" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../../src/FluentPdf.Kernel/FluentPdf.Kernel.csproj" />
+    <ProjectReference Include="../../src/FluentPdf.Domain/FluentPdf.Domain.csproj" />
+    <ProjectReference Include="../../src/FluentPdf.Application/FluentPdf.Application.csproj" />
+    <ProjectReference Include="../../src/FluentPdf.Infrastructure/FluentPdf.Infrastructure.csproj" />
+  </ItemGroup>
+
+</Project>

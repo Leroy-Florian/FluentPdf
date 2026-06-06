@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <!-- A test-support kit consumed by adapter test projects; modern runtimes only. -->
+    <TargetFrameworks>net8.0;net10.0</TargetFrameworks>
+    <RootNamespace>FluentPdf.Conformance</RootNamespace>
+    <AssemblyName>FluentPdf.Conformance</AssemblyName>
+    <!-- A reusable contract-test base library, not a runnable test project. Keep it out of
+         `dotnet test` discovery so the runner does not try to execute it directly. -->
+    <IsTestProject>false</IsTestProject>
+    <Description>A shared xUnit contract-test kit every FluentPdf renderer adapter (QuestPDF, iText, PDFsharp, …) must pass to prove it honours the agnostic document model.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../FluentPdf.Application/FluentPdf.Application.csproj" />
+    <ProjectReference Include="../FluentPdf.Domain/FluentPdf.Domain.csproj" />
+    <ProjectReference Include="../FluentPdf.Kernel/FluentPdf.Kernel.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="xunit" />
+    <PackageReference Include="FluentAssertions" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,20 @@
+<Solution>
+  <Folder Name="/samples/">
+    <Project Path="samples/FluentPdf.Samples/FluentPdf.Samples.csproj" />
+  </Folder>
+  <Folder Name="/src/">
+    <Project Path="src/FluentPdf.Application/FluentPdf.Application.csproj" />
+    <Project Path="src/FluentPdf.Conformance/FluentPdf.Conformance.csproj" />
+    <Project Path="src/FluentPdf.Domain/FluentPdf.Domain.csproj" />
+    <Project Path="src/FluentPdf.Infrastructure/FluentPdf.Infrastructure.csproj" />
+    <Project Path="src/FluentPdf.Kernel/FluentPdf.Kernel.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/FluentPdf.Application.UnitTests/FluentPdf.Application.UnitTests.csproj" />
+    <Project Path="tests/FluentPdf.ArchitectureTests/FluentPdf.ArchitectureTests.csproj" />
+    <Project Path="tests/FluentPdf.Domain.UnitTests/FluentPdf.Domain.UnitTests.csproj" />
+    <Project Path="tests/FluentPdf.Infrastructure.ConformanceTests/FluentPdf.Infrastructure.ConformanceTests.csproj" />
+    <Project Path="tests/FluentPdf.Infrastructure.UnitTests/FluentPdf.Infrastructure.UnitTests.csproj" />
+    <Project Path="tests/FluentPdf.Kernel.UnitTests/FluentPdf.Kernel.UnitTests.csproj" />
+  </Folder>
+</Solution>

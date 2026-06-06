@@ -70,8 +70,21 @@ public static class DocumentFeatureScanner
         ImageBlock => PdfFeature.Image,
         ListBlock list => PdfFeature.List | ScanListItems(list),
         TableBlock table => PdfFeature.Table | ScanTable(table),
+        RowBlock row => PdfFeature.Grid | ScanRow(row),
         _ => PdfFeature.None,
     };
+
+    private static PdfFeature ScanRow(RowBlock row)
+    {
+        var features = PdfFeature.None;
+
+        foreach (var column in row.Columns)
+        {
+            features |= ScanBlocks(column.Blocks);
+        }
+
+        return features;
+    }
 
     private static PdfFeature ScanListItems(ListBlock list)
     {

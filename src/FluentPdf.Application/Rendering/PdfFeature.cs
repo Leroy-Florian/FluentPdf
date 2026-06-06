@@ -20,4 +20,5 @@ public enum PdfFeature
     Header = 1 << 6,
     Footer = 1 << 7,
     Metadata = 1 << 8,
+    Grid = 1 << 9,
 }

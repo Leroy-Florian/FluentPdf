@@ -1,0 +1,8 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="../../src/FluentPdf.Conformance/FluentPdf.Conformance.csproj" />
+    <ProjectReference Include="../../src/FluentPdf.Infrastructure/FluentPdf.Infrastructure.csproj" />
+  </ItemGroup>
+
+</Project>

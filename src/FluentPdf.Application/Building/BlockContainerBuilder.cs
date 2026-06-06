@@ -132,6 +132,24 @@ public abstract class BlockContainerBuilder<TSelf>
         return Self;
     }
 
+    /// <summary>Appends the blocks produced by an inline component delegate.</summary>
+    public TSelf Component(Func<Result<IReadOnlyList<IBlock>>> component)
+    {
+        AddBlocks(component is null
+            ? Result.Failure<IReadOnlyList<IBlock>>(Error.NullValue)
+            : component());
+        return Self;
+    }
+
+    /// <summary>Appends the blocks produced by an inline, DTO-driven component delegate.</summary>
+    public TSelf Component<TModel>(TModel model, Func<TModel, Result<IReadOnlyList<IBlock>>> component)
+    {
+        AddBlocks(component is null
+            ? Result.Failure<IReadOnlyList<IBlock>>(Error.NullValue)
+            : component(model));
+        return Self;
+    }
+
     internal Result<IReadOnlyList<IBlock>> BuildBlocks()
     {
         var blocks = new List<IBlock>();

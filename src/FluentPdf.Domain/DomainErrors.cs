@@ -137,5 +137,9 @@ public static class DomainErrors
         public static readonly Error EmptyColumn = Error.Validation(
             "Grid.EmptyColumn",
             "A column must contain at least one block of content.");
+
+        public static readonly Error NoSpaceForAutoColumns = Error.Validation(
+            "Grid.NoSpaceForAutoColumns",
+            "Auto-width columns need at least one free grid unit to share.");
     }
 }

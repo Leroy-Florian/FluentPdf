@@ -133,10 +133,12 @@ internal static class DocumentTextSerializer
 
     private static void AppendRow(StringBuilder builder, RowBlock row)
     {
-        foreach (var column in row.Columns)
+        var widths = row.ResolveWidths();
+
+        for (var i = 0; i < row.Columns.Count; i++)
         {
-            builder.AppendLine($"[col:{column.Width}]");
-            AppendBlocks(builder, column.Blocks);
+            builder.AppendLine($"[col:{widths[i]}]");
+            AppendBlocks(builder, row.Columns[i].Blocks);
         }
     }
 }

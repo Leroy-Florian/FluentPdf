@@ -9,7 +9,16 @@ public sealed class RowBuilder
     private readonly List<Result<Column>> _columns = [];
 
     /// <summary>Adds a column spanning <paramref name="width"/> grid units (1-12).</summary>
-    public RowBuilder Column(int width, Action<ColumnBuilder> configure)
+    public RowBuilder Column(int width, Action<ColumnBuilder> configure) =>
+        AddColumn(blocks => Domain.Content.Column.Create(width, blocks), configure);
+
+    /// <summary>Adds an auto-width column that shares the row's remaining grid space.</summary>
+    public RowBuilder Column(Action<ColumnBuilder> configure) =>
+        AddColumn(Domain.Content.Column.CreateAuto, configure);
+
+    private RowBuilder AddColumn(
+        Func<IReadOnlyList<IBlock>, Result<Column>> create,
+        Action<ColumnBuilder> configure)
     {
         var builder = new ColumnBuilder();
         configure(builder);
@@ -17,7 +26,7 @@ public sealed class RowBuilder
 
         _columns.Add(blocks.IsFailure
             ? Result.Failure<Column>(blocks.Error)
-            : Domain.Content.Column.Create(width, blocks.Value));
+            : create(blocks.Value));
 
         return this;
     }

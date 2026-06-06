@@ -239,6 +239,58 @@ public sealed class ContentTests
     }
 
     [Fact]
+    public void Auto_column_is_marked_auto_and_has_no_explicit_width()
+    {
+        var column = Column.CreateAuto([SampleParagraph()]).Value;
+
+        column.IsAuto.Should().BeTrue();
+        column.Width.Should().BeNull();
+    }
+
+    [Fact]
+    public void Explicit_column_is_not_auto()
+    {
+        Column.Create(4, [SampleParagraph()]).Value.IsAuto.Should().BeFalse();
+    }
+
+    [Fact]
+    public void Auto_column_requires_content()
+    {
+        Column.CreateAuto([]).Error.Should().Be(DomainErrors.Grid.EmptyColumn);
+    }
+
+    [Fact]
+    public void Auto_columns_share_the_remaining_grid_space()
+    {
+        var fixedColumn = Column.Create(6, [SampleParagraph()]).Value;
+        var autoA = Column.CreateAuto([SampleParagraph()]).Value;
+        var autoB = Column.CreateAuto([SampleParagraph()]).Value;
+
+        var row = RowBlock.Create([fixedColumn, autoA, autoB]).Value;
+
+        row.UsedWidth.Should().Be(6);
+        row.AutoColumnCount.Should().Be(2);
+        row.ResolveWidths().Should().Equal(6d, 3d, 3d);
+    }
+
+    [Fact]
+    public void All_explicit_row_resolves_to_explicit_widths()
+    {
+        var row = RowBlock.Create([Column.Create(4, [SampleParagraph()]).Value]).Value;
+
+        row.ResolveWidths().Should().Equal(4d);
+    }
+
+    [Fact]
+    public void Auto_columns_fail_when_no_space_remains()
+    {
+        var full = Column.Create(12, [SampleParagraph()]).Value;
+        var auto = Column.CreateAuto([SampleParagraph()]).Value;
+
+        RowBlock.Create([full, auto]).Error.Should().Be(DomainErrors.Grid.NoSpaceForAutoColumns);
+    }
+
+    [Fact]
     public void PageFurniture_requires_blocks()
     {
         PageFurniture.Create([]).Error.Should().Be(DomainErrors.Section.NoBlocks);

@@ -70,7 +70,7 @@ var result = PdfDocumentBuilder.Create()
         .Footer(f => f.Paragraph("Thank you"))
         .Row(r => r                                   // 12-unit grid, à la Bootstrap
             .Column(8, c => c.Paragraph(p => p.Bold("Invoice INV-001")))
-            .Column(4, c => c.Paragraph("Jane Doe", alignment: HorizontalAlignment.Right)))
+            .Column(c => c.Paragraph("Jane Doe", alignment: HorizontalAlignment.Right))) // auto: shares the free space
         .Table(t => t
             .Columns(2)
             .HeaderRow(r => r.Cell("Description").Cell("Total"))
@@ -78,8 +78,14 @@ var result = PdfDocumentBuilder.Create()
     .Build();                                          // Result<PdfDocument>
 ```
 
-**Reusable blocks** are first-class. A component maps a print DTO to blocks and can be reused
-across documents:
+Grid columns are either explicit (`Column(width, …)`, 1-12) or **auto** (`Column(…)`), in
+which case they share whatever space the explicit columns leave free — like Bootstrap's
+`col` vs `col-N`.
+
+**Reusable blocks** are first-class — as interfaces (`IBlockComponent` /
+`IBlockComponent<TModel>`) for testable, injectable components, or as inline delegates
+(`Component(dto, d => …)`) for quick cases. A component maps a print DTO to blocks and can
+be reused across documents:
 
 ```csharp
 public sealed class InvoiceHeaderComponent : IBlockComponent<InvoiceDto>

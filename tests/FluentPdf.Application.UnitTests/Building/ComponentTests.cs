@@ -69,6 +69,51 @@ public sealed class ComponentTests
         second.IsSuccess.Should().BeTrue();
     }
 
+    [Fact]
+    public void An_inline_delegate_component_adds_blocks()
+    {
+        var document = PdfDocumentBuilder.Create()
+            .Section(s => s.Component(() => BlockComposer.Compose(b => b.Paragraph("inline"))))
+            .Build()
+            .Value;
+
+        document.Sections[0].Blocks.Should().ContainSingle();
+    }
+
+    [Fact]
+    public void An_inline_dto_delegate_component_uses_the_model()
+    {
+        var document = PdfDocumentBuilder.Create()
+            .Section(s => s.Component("World", name => BlockComposer.Compose(b => b.Paragraph($"Hello {name}"))))
+            .Build()
+            .Value;
+
+        document.Sections[0].Blocks.Should().ContainSingle();
+    }
+
+    [Fact]
+    public void A_null_delegate_component_fails()
+    {
+        PdfDocumentBuilder.Create()
+            .Section(s => s.Component((Func<Result<IReadOnlyList<IBlock>>>)null!))
+            .Build()
+            .IsFailure.Should().BeTrue();
+    }
+
+    [Fact]
+    public void Auto_columns_can_be_built_fluently()
+    {
+        var section = PdfDocumentBuilder.Create()
+            .Section(s => s.Row(r => r
+                .Column(6, c => c.Paragraph("fixed"))
+                .Column(c => c.Paragraph("auto"))))
+            .Build()
+            .Value
+            .Sections[0];
+
+        section.Blocks.Should().ContainSingle();
+    }
+
     private sealed class GreetingComponent : IBlockComponent
     {
         public Result<IReadOnlyList<IBlock>> Build() =>

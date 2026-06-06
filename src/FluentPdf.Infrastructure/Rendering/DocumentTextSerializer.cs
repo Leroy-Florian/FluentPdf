@@ -122,7 +122,7 @@ internal static class DocumentTextSerializer
 
     private static void AppendList(StringBuilder builder, ListBlock list)
     {
-        var index = 1;
+        var index = list.StartNumber;
 
         foreach (var item in list.Items)
         {

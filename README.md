@@ -99,8 +99,10 @@ depends on no PDF library, it cannot measure glyphs itself — so measurement is
 `ITextMeasurer`, supplied by the adapter; a dependency-free `ApproximateTextMeasurer` is the
 built-in default. The `DocumentPaginator` then:
 
-- fills pages top-to-bottom, **splitting long paragraphs at word boundaries** and **long
-  tables at row boundaries** (repeating header rows), honouring explicit page breaks;
+- fills pages top-to-bottom, **splitting long paragraphs at word boundaries**, **tables at
+  row boundaries** (repeating header rows), **lists at item boundaries** (ordered numbering
+  stays continuous across the break) and **grid rows column-by-column**, honouring explicit
+  page breaks;
 - **streams pages lazily** (`IEnumerable` + `yield`) so memory stays flat — a 40-page
   agreement or a mass-print run of thousands never holds more than one page at a time;
 - resolves **page-number fields** (`PageNumber("Page {page} of {pages}")`) once the totals

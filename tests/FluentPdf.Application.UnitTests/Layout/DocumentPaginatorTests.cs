@@ -60,6 +60,79 @@ public sealed class DocumentPaginatorTests
     }
 
     [Fact]
+    public void A_long_list_splits_at_item_boundaries_keeping_numbering_continuous()
+    {
+        var document = Document(s =>
+        {
+            s.Margins(0d);
+            s.OrderedList(l =>
+            {
+                for (var i = 1; i <= 10; i++)
+                {
+                    l.Item($"item {i}");
+                }
+            });
+        });
+
+        var pages = new DocumentPaginator(new FixedTextMeasurer(lineHeight: 200d))
+            .Paginate(document)
+            .ToList();
+
+        pages.Count.Should().BeGreaterThan(1);
+
+        var lists = pages.Select(page => (ListBlock)page.Body[0]).ToList();
+        lists.Sum(list => list.Items.Count).Should().Be(10);
+
+        var expectedStart = 1;
+        foreach (var list in lists)
+        {
+            list.StartNumber.Should().Be(expectedStart);
+            expectedStart += list.Items.Count;
+        }
+    }
+
+    [Fact]
+    public void A_tall_grid_row_splits_each_column_at_the_cut()
+    {
+        var document = Document(s => s
+            .Margins(0d)
+            .Row(r => r
+                .Column(6, c =>
+                {
+                    for (var i = 1; i <= 8; i++)
+                    {
+                        c.Paragraph($"L{i}");
+                    }
+                })
+                .Column(6, c =>
+                {
+                    for (var i = 1; i <= 8; i++)
+                    {
+                        c.Paragraph($"R{i}");
+                    }
+                })));
+
+        var pages = new DocumentPaginator(new FixedTextMeasurer(lineHeight: 200d))
+            .Paginate(document)
+            .ToList();
+
+        pages.Count.Should().BeGreaterThan(1);
+
+        foreach (var page in pages)
+        {
+            var row = (RowBlock)page.Body[0];
+            row.Columns.Should().HaveCount(2);
+            row.Columns[0].Blocks.Should().NotBeEmpty();
+            row.Columns[1].Blocks.Should().NotBeEmpty();
+        }
+
+        var totalParagraphs = pages
+            .Select(page => (RowBlock)page.Body[0])
+            .Sum(row => row.Columns[0].Blocks.Count + row.Columns[1].Blocks.Count);
+        totalParagraphs.Should().Be(16);
+    }
+
+    [Fact]
     public void Page_number_fields_are_resolved_with_the_total()
     {
         var document = PdfDocumentBuilder.Create()

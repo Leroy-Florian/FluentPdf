@@ -104,6 +104,10 @@ public static class DomainErrors
         public static readonly Error NoItems = Error.Validation(
             "List.NoItems",
             "A list must contain at least one item.");
+
+        public static readonly Error InvalidStartNumber = Error.Validation(
+            "List.InvalidStartNumber",
+            "An ordered list's start number must be greater than zero.");
     }
 
     public static class Section

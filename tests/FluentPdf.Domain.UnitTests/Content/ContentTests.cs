@@ -291,6 +291,31 @@ public sealed class ContentTests
     }
 
     [Fact]
+    public void An_ordered_list_can_start_at_an_offset()
+    {
+        var list = ListBlock.Create(
+            ListStyle.Ordered,
+            [ListItem.FromText("a").Value, ListItem.FromText("b").Value],
+            startNumber: 5).Value;
+
+        list.StartNumber.Should().Be(5);
+    }
+
+    [Fact]
+    public void A_list_defaults_to_starting_at_one()
+    {
+        ListBlock.Create(ListStyle.Ordered, [ListItem.FromText("a").Value]).Value
+            .StartNumber.Should().Be(1);
+    }
+
+    [Fact]
+    public void A_non_positive_start_number_fails()
+    {
+        ListBlock.Create(ListStyle.Ordered, [ListItem.FromText("a").Value], startNumber: 0)
+            .Error.Should().Be(DomainErrors.ListBlock.InvalidStartNumber);
+    }
+
+    [Fact]
     public void PageFurniture_requires_blocks()
     {
         PageFurniture.Create([]).Error.Should().Be(DomainErrors.Section.NoBlocks);

@@ -142,6 +142,8 @@ public sealed class DocumentPaginator
             Paragraph paragraph when paragraph.Runs.Count == 1 =>
                 TrySplitParagraph(paragraph, width, maxHeight),
             TableBlock table => TrySplitTable(table, width, maxHeight),
+            ListBlock list => TrySplitList(list, width, maxHeight),
+            RowBlock row => TrySplitRow(row, width, maxHeight),
             _ => null,
         };
 
@@ -275,6 +277,127 @@ public sealed class DocumentPaginator
 
         var head = TableBlock.Create(table.ColumnCount, headRows).Value;
         var tail = TableBlock.Create(table.ColumnCount, tailRows).Value;
+        return (head, tail);
+    }
+
+    private (IBlock Head, IBlock Tail)? TrySplitList(ListBlock list, double width, double maxHeight)
+    {
+        var items = list.Items;
+
+        if (items.Count < 2)
+        {
+            return null;
+        }
+
+        var used = 0d;
+        var fit = 0;
+
+        foreach (var item in items)
+        {
+            var itemHeight = BlocksHeight(item.Blocks, width);
+
+            if (fit > 0 && used + itemHeight > maxHeight)
+            {
+                break;
+            }
+
+            used += itemHeight;
+            fit++;
+
+            if (used > maxHeight)
+            {
+                break;
+            }
+        }
+
+        if (fit < 1 || fit >= items.Count)
+        {
+            return null;
+        }
+
+        var all = new List<ListItem>(items);
+        var headItems = all.GetRange(0, fit);
+        var tailItems = all.GetRange(fit, items.Count - fit);
+
+        // An ordered list keeps numbering continuous across the page break.
+        var head = ListBlock.Create(list.Style, headItems, list.StartNumber).Value;
+        var tail = ListBlock.Create(list.Style, tailItems, list.StartNumber + fit).Value;
+        return (head, tail);
+    }
+
+    private (IBlock Head, IBlock Tail)? TrySplitRow(RowBlock row, double width, double maxHeight)
+    {
+        var widths = row.ResolveWidths();
+
+        List<Column> headColumns = [];
+        List<Column> tailColumns = [];
+
+        for (var i = 0; i < row.Columns.Count; i++)
+        {
+            var column = row.Columns[i];
+            var columnWidth = widths[i] / Column.MaxWidth * width;
+            var (headBlocks, tailBlocks) = SplitBlocks(column.Blocks, columnWidth, maxHeight);
+
+            // Only split the row when every column has content on both sides of the cut; a
+            // ragged cut would leave an empty column, so fall back to treating the row as atomic.
+            if (headBlocks.Count == 0 || tailBlocks.Count == 0)
+            {
+                return null;
+            }
+
+            headColumns.Add(RebuildColumn(column, headBlocks));
+            tailColumns.Add(RebuildColumn(column, tailBlocks));
+        }
+
+        var head = RowBlock.Create(headColumns).Value;
+        var tail = RowBlock.Create(tailColumns).Value;
+        return (head, tail);
+    }
+
+    private static Column RebuildColumn(Column column, List<IBlock> blocks) =>
+        (column.IsAuto
+            ? Column.CreateAuto(blocks)
+            : Column.Create(column.Width!.Value, blocks)).Value;
+
+    private (List<IBlock> Head, List<IBlock> Tail) SplitBlocks(
+        IReadOnlyList<IBlock> blocks,
+        double width,
+        double maxHeight)
+    {
+        List<IBlock> head = [];
+        List<IBlock> tail = [];
+        var remaining = maxHeight;
+        var index = 0;
+
+        for (; index < blocks.Count; index++)
+        {
+            var block = blocks[index];
+            var height = MeasureBlock(block, width);
+
+            if (height <= remaining)
+            {
+                head.Add(block);
+                remaining -= height;
+                continue;
+            }
+
+            var split = TrySplit(block, width, remaining);
+
+            if (split is { } parts)
+            {
+                head.Add(parts.Head);
+                tail.Add(parts.Tail);
+                index++;
+            }
+
+            break;
+        }
+
+        for (; index < blocks.Count; index++)
+        {
+            tail.Add(blocks[index]);
+        }
+
         return (head, tail);
     }
 

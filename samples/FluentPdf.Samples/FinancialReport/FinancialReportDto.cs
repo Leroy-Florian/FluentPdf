@@ -13,6 +13,7 @@ public sealed record FinancialReportDto(
     FinancialStatement BalanceSheet,
     FinancialStatement CashFlow,
     IReadOnlyList<BusinessSegment> Segments,
+    IReadOnlyList<QuarterlyResult> Trend,
     ManagementCommentary Commentary,
     IReadOnlyList<RiskEntry> Risks,
     IReadOnlyList<Signatory> Signatories);
@@ -60,6 +61,9 @@ public sealed record StatementLine(string Label, decimal Current, decimal Prior,
     public double VariancePercent =>
         Prior == 0m ? 0d : (double)((Current - Prior) / Math.Abs(Prior)) * 100d;
 }
+
+/// <summary>One quarter of the rolling revenue/EBITDA trend.</summary>
+public sealed record QuarterlyResult(string Quarter, decimal Revenue, decimal Ebitda);
 
 /// <summary>Performance of a single operating segment.</summary>
 public sealed record BusinessSegment(string Name, decimal Revenue, decimal OperatingProfit, int Headcount)

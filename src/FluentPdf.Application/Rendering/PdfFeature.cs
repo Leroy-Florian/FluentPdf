@@ -21,4 +21,5 @@ public enum PdfFeature
     Footer = 1 << 7,
     Metadata = 1 << 8,
     Grid = 1 << 9,
+    Chart = 1 << 10,
 }

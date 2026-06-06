@@ -74,13 +74,23 @@ var result = PdfDocumentBuilder.Create()
         .Table(t => t
             .Columns(2)
             .HeaderRow(r => r.Cell("Description").Cell("Total"))
-            .Row(r => r.Cell("Widget").Cell("19.98"))))
+            .Row(r => r.Cell("Widget").Cell("19.98")))
+        .Chart(c => c                                  // agnostic chart: data, not pixels
+            .Line()
+            .Title("Revenue trend")
+            .Categories("Q1", "Q2", "Q3", "Q4")
+            .Series("Revenue", 441_200, 458_700, 469_900, 482_300)))
     .Build();                                          // Result<PdfDocument>
 ```
 
 Grid columns are either explicit (`Column(width, …)`, 1-12) or **auto** (`Column(…)`), in
 which case they share whatever space the explicit columns leave free — like Bootstrap's
 `col` vs `col-N`.
+
+**Charts are agnostic too**: `Chart(…)` describes a `Bar`/`Line`/`Pie` with categories and
+named numeric series — *what* to plot, never how it is painted. Adapters draw it with their
+own charting library; an adapter that can't declares the `Chart` capability unsupported, so
+the use case fails fast instead of dropping it silently.
 
 **Reusable blocks** are first-class — as interfaces (`IBlockComponent` /
 `IBlockComponent<TModel>`) for testable, injectable components, or as inline delegates
@@ -119,8 +129,9 @@ See [`samples/FluentPdf.Samples`](samples/FluentPdf.Samples) for the full, compi
 
 - **Invoice** (`Invoice/`) — the minimal end-to-end walkthrough.
 - **Financial report** (`FinancialReport/`) — a deliberately complex, multi-section quarterly
-  report (cover, KPI scorecard, three financial statements, segment breakdown, risk register,
-  sign-off) decomposed into small **reusable business blocks**. The keystone
+  report (cover, KPI scorecard, trend line chart, three financial statements, segment
+  breakdown with a revenue-mix pie chart, risk register, sign-off) decomposed into small
+  **reusable business blocks**. The keystone
   `FinancialStatementComponent` is fed the income statement, balance sheet and cash-flow
   statement in turn, and a separate `BoardOnePagerTemplate` re-composes the very same blocks
   into a one-page briefing — demonstrating blocks that are authored once and reused across

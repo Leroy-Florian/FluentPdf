@@ -120,6 +120,45 @@ public static class DomainErrors
             "A document must contain at least one section.");
     }
 
+    public static class Chart
+    {
+        public static readonly Error NoCategories = Error.Validation(
+            "Chart.NoCategories",
+            "A chart must define at least one category.");
+
+        public static readonly Error EmptyCategory = Error.Validation(
+            "Chart.EmptyCategory",
+            "Chart category labels must not be empty.");
+
+        public static readonly Error NoSeries = Error.Validation(
+            "Chart.NoSeries",
+            "A chart must contain at least one data series.");
+
+        public static readonly Error EmptySeries = Error.Validation(
+            "Chart.EmptySeries",
+            "A chart series must contain at least one value.");
+
+        public static readonly Error EmptySeriesName = Error.Validation(
+            "Chart.EmptySeriesName",
+            "A chart series must have a name.");
+
+        public static readonly Error SeriesLengthMismatch = Error.Validation(
+            "Chart.SeriesLengthMismatch",
+            "Every series must supply exactly one value per category.");
+
+        public static readonly Error NonPositiveDimension = Error.Validation(
+            "Chart.NonPositiveDimension",
+            "Chart width and height must be greater than zero.");
+
+        public static readonly Error PieRequiresSingleSeries = Error.Validation(
+            "Chart.PieRequiresSingleSeries",
+            "A pie chart must contain exactly one series.");
+
+        public static readonly Error PieRequiresNonNegativeValues = Error.Validation(
+            "Chart.PieRequiresNonNegativeValues",
+            "A pie chart's values must not be negative.");
+    }
+
     public static class Grid
     {
         public static readonly Error ColumnWidthOutOfRange = Error.Validation(

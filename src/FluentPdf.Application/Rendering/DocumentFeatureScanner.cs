@@ -68,6 +68,7 @@ public static class DocumentFeatureScanner
         Spacer => PdfFeature.Spacer,
         PageBreak => PdfFeature.PageBreak,
         ImageBlock => PdfFeature.Image,
+        ChartBlock => PdfFeature.Chart,
         ListBlock list => PdfFeature.List | ScanListItems(list),
         TableBlock table => PdfFeature.Table | ScanTable(table),
         RowBlock row => PdfFeature.Grid | ScanRow(row),

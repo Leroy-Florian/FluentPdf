@@ -15,7 +15,7 @@ public sealed class RendererCapabilities
     public const PdfFeature Everything =
         PdfFeature.Paragraph | PdfFeature.Image | PdfFeature.Table | PdfFeature.List |
         PdfFeature.Spacer | PdfFeature.PageBreak | PdfFeature.Header | PdfFeature.Footer |
-        PdfFeature.Metadata | PdfFeature.Grid;
+        PdfFeature.Metadata | PdfFeature.Grid | PdfFeature.Chart;
 
     public RendererCapabilities(PdfFeature supported) => Supported = supported;
 

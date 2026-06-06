@@ -71,6 +71,11 @@ public static class CanonicalDocuments
                     .HeaderRow(r => r.Cell("Name").Cell("Value"))
                     .Row(r => r.Cell("Alpha").Cell("1")))
                 .Image([0x89, 0x50, 0x4E, 0x47], ImageFormat.Png, 64d, 64d)
+                .Chart(c => c
+                    .Bar()
+                    .Title("conformance chart")
+                    .Categories("A", "B")
+                    .Series("Series 1", 1d, 2d))
                 .Spacer(12d)
                 .PageBreak()
                 .Paragraph("second page"))

@@ -58,6 +58,18 @@ public sealed class FinancialReportSampleTests
     }
 
     [Fact]
+    public void Full_report_renders_trend_and_segment_mix_charts()
+    {
+        var text = Decode(FinancialReportSample.RenderWithInMemoryAdapter());
+
+        text.Should().Contain("[chart:Line");
+        text.Should().Contain("Revenue & EBITDA trend");
+        text.Should().Contain("[chart:Pie");
+        text.Should().Contain("Revenue by segment");
+        text.Should().Contain("categories: Q1, Q2, Q3, Q4");
+    }
+
+    [Fact]
     public void Full_report_includes_segments_risks_and_signatories()
     {
         var text = Decode(FinancialReportSample.RenderWithInMemoryAdapter());

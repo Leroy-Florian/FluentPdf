@@ -114,6 +114,15 @@ public abstract class BlockContainerBuilder<TSelf>
         return Self;
     }
 
+    /// <summary>Appends an agnostic chart (bar, line or pie).</summary>
+    public TSelf Chart(Action<ChartBuilder> configure)
+    {
+        var builder = new ChartBuilder();
+        configure(builder);
+        AddBlock(builder.Build().AsBlock());
+        return Self;
+    }
+
     /// <summary>Appends the blocks produced by a reusable component.</summary>
     public TSelf Component(IBlockComponent component)
     {

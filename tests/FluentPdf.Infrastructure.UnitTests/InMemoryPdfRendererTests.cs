@@ -61,6 +61,26 @@ public sealed class InMemoryPdfRendererTests
             "[image:Png 4x8]");
     }
 
+    [Fact]
+    public void Output_describes_a_chart_with_its_categories_and_series()
+    {
+        var document = PdfDocumentBuilder.Create()
+            .Section(s => s.Chart(c => c
+                .Line()
+                .Title("chart-title")
+                .Categories("Q1", "Q2")
+                .Series("Revenue", 100d, 110d)))
+            .Build()
+            .Value;
+
+        var text = RenderText(document);
+
+        text.Should().ContainAll(
+            "[chart:Line", "chart-title",
+            "categories: Q1, Q2",
+            "series Revenue: 100, 110");
+    }
+
     [Theory]
     [InlineData(0, 1)]
     [InlineData(2, 3)]

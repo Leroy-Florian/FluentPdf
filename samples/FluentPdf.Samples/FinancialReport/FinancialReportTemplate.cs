@@ -18,6 +18,8 @@ public sealed class FinancialReportTemplate : IDocumentTemplate<FinancialReportD
     private readonly BrandedCoverComponent _cover = new();
     private readonly DocumentControlComponent _control = new();
     private readonly KpiScorecardComponent _scorecard = new();
+    private readonly TrendChartComponent _trend = new();
+    private readonly SegmentMixChartComponent _segmentMix = new();
     private readonly FinancialStatementComponent _statement = new();
     private readonly SegmentBreakdownComponent _segments = new();
     private readonly CommentaryComponent _commentary = new();
@@ -46,6 +48,7 @@ public sealed class FinancialReportTemplate : IDocumentTemplate<FinancialReportD
             .Section(summary => RunningPage(summary, company)
                 .Component(_heading, "1. Executive summary")
                 .Component(_scorecard, report.Kpis)
+                .Component(_trend, report.Trend)
                 .Component(_commentary, report.Commentary))
 
             // 3 — Financial statements: landscape so the wide variance tables breathe. The
@@ -58,7 +61,8 @@ public sealed class FinancialReportTemplate : IDocumentTemplate<FinancialReportD
                 .Component(_statement, report.CashFlow)
                 .PageBreak()
                 .Component(_heading, "3. Segment performance")
-                .Component(_segments, report.Segments))
+                .Component(_segments, report.Segments)
+                .Component(_segmentMix, report.Segments))
 
             // 4 — Risk register and sign-off. The sign-off is composed inline as a delegate
             //     component, showing the lightweight alternative to a dedicated class.

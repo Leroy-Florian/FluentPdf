@@ -223,6 +223,38 @@ public sealed class CommentaryComponent : IBlockComponent<ManagementCommentary>
         });
 }
 
+/// <summary>
+/// A line chart of the rolling revenue and EBITDA trend. Charts are agnostic descriptions —
+/// categories and numeric series — so the same block renders through any charting adapter.
+/// </summary>
+public sealed class TrendChartComponent : IBlockComponent<IReadOnlyList<QuarterlyResult>>
+{
+    public Result<IReadOnlyList<IBlock>> Build(IReadOnlyList<QuarterlyResult> trend) =>
+        BlockComposer.Compose(blocks => blocks
+            .Chart(chart => chart
+                .Line()
+                .Title("Revenue & EBITDA trend")
+                .Size(520d, 240d)
+                .Categories([.. trend.Select(point => point.Quarter)])
+                .Series("Revenue", trend.Select(point => (double)point.Revenue))
+                .Series("EBITDA", trend.Select(point => (double)point.Ebitda)))
+            .Spacer(12d));
+}
+
+/// <summary>A pie chart of the revenue mix by operating segment.</summary>
+public sealed class SegmentMixChartComponent : IBlockComponent<IReadOnlyList<BusinessSegment>>
+{
+    public Result<IReadOnlyList<IBlock>> Build(IReadOnlyList<BusinessSegment> segments) =>
+        BlockComposer.Compose(blocks => blocks
+            .Chart(chart => chart
+                .Pie()
+                .Title("Revenue by segment")
+                .Size(320d, 320d)
+                .Categories([.. segments.Select(segment => segment.Name)])
+                .Series("Revenue", segments.Select(segment => (double)segment.Revenue)))
+            .Spacer(12d));
+}
+
 /// <summary>The risk register: one row per risk with likelihood, impact and mitigation.</summary>
 public sealed class RiskRegisterComponent : IBlockComponent<IReadOnlyList<RiskEntry>>
 {

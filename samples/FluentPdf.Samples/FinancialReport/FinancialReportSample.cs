@@ -108,6 +108,13 @@ public static class FinancialReportSample
             new BusinessSegment("Capital Markets", 96_200m, 21_400m, 720),
             new BusinessSegment("Insurance Solutions", 33_000m, 4_530m, 300),
         ],
+        Trend:
+        [
+            new QuarterlyResult("Q1", 441_200m, 99_300m),
+            new QuarterlyResult("Q2", 458_700m, 106_100m),
+            new QuarterlyResult("Q3", 469_900m, 111_800m),
+            new QuarterlyResult("Q4", 482_300m, 118_540m),
+        ],
         Commentary: new ManagementCommentary(
             Heading: "Management commentary",
             Paragraphs:

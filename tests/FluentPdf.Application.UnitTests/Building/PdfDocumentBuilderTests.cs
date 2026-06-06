@@ -26,6 +26,7 @@ public sealed class PdfDocumentBuilderTests
                 .OrderedList(l => l.Item("one").Item(i => i.Paragraph("two")))
                 .Table(t => t.Columns(2).HeaderRow(r => r.Cell("h1").Cell("h2")).Row(r => r.Cell("a").Cell(c => c.Paragraph("b"))))
                 .Image([1, 2, 3], ImageFormat.Png, 10d, 10d)
+                .Chart(c => c.Line().Categories("x", "y").Series("s", 1d, 2d))
                 .Spacer(5d)
                 .PageBreak())
             .Build();
@@ -40,7 +41,7 @@ public sealed class PdfDocumentBuilderTests
         section.PageSize.Orientation.Should().Be(PageOrientation.Landscape);
         section.Header.Should().NotBeNull();
         section.Footer.Should().NotBeNull();
-        section.Blocks.Should().HaveCount(8);
+        section.Blocks.Should().HaveCount(9);
 
         var features = DocumentFeatureScanner.Scan(document);
         features.Should().Be(RendererCapabilities.Everything);
@@ -111,6 +112,15 @@ public sealed class PdfDocumentBuilderTests
                 .Column(8, c => c.Paragraph("y"))))
             .Build()
             .Error.Should().Be(DomainErrors.Grid.RowOverflow);
+    }
+
+    [Fact]
+    public void Invalid_chart_propagates_from_the_builder()
+    {
+        PdfDocumentBuilder.Create()
+            .Section(s => s.Chart(c => c.Bar().Categories("A", "B").Series("s", 1d)))
+            .Build()
+            .Error.Should().Be(DomainErrors.Chart.SeriesLengthMismatch);
     }
 
     [Fact]

@@ -64,4 +64,15 @@ public sealed class DocumentFeatureScannerTests
         features.Should().HaveFlag(PdfFeature.Table);
         features.Should().HaveFlag(PdfFeature.Image);
     }
+
+    [Fact]
+    public void Detects_charts()
+    {
+        var document = PdfDocumentBuilder.Create()
+            .Section(s => s.Chart(c => c.Bar().Categories("A", "B").Series("s", 1d, 2d)))
+            .Build()
+            .Value;
+
+        DocumentFeatureScanner.Scan(document).Should().HaveFlag(PdfFeature.Chart);
+    }
 }

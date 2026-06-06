@@ -15,6 +15,7 @@ public sealed class BoardOnePagerTemplate : IDocumentTemplate<FinancialReportDto
 {
     private readonly SectionHeadingComponent _heading = new();
     private readonly KpiScorecardComponent _scorecard = new();
+    private readonly TrendChartComponent _trend = new();
     private readonly CommentaryComponent _commentary = new();
 
     public Result<PdfDocument> Build(FinancialReportDto report) =>
@@ -31,6 +32,7 @@ public sealed class BoardOnePagerTemplate : IDocumentTemplate<FinancialReportDto
                     ReportStyles.Muted)))
                 .Component(_heading, $"{report.Company.Name} — at a glance")
                 .Component(_scorecard, report.Kpis)
+                .Component(_trend, report.Trend)
                 .Component(_commentary, report.Commentary))
             .Build();
 }

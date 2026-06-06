@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text;
 using FluentPdf.Domain;
 using FluentPdf.Domain.Content;
@@ -90,6 +91,9 @@ internal static class DocumentTextSerializer
             case ImageBlock image:
                 builder.AppendLine($"[image:{image.Format} {image.Width}x{image.Height}]");
                 break;
+            case ChartBlock chart:
+                AppendChart(builder, chart);
+                break;
             case ListBlock list:
                 AppendList(builder, list);
                 break;
@@ -128,6 +132,21 @@ internal static class DocumentTextSerializer
             {
                 AppendBlocks(builder, cell.Blocks);
             }
+        }
+    }
+
+    private static void AppendChart(StringBuilder builder, ChartBlock chart)
+    {
+        var title = string.IsNullOrEmpty(chart.Title) ? string.Empty : $" {chart.Title}";
+        builder.AppendLine($"[chart:{chart.Type} {chart.Width}x{chart.Height}]{title}");
+        builder.AppendLine($"categories: {string.Join(", ", chart.Categories)}");
+
+        foreach (var series in chart.Series)
+        {
+            var values = string.Join(
+                ", ",
+                series.Values.Select(static value => value.ToString(CultureInfo.InvariantCulture)));
+            builder.AppendLine($"series {series.Name}: {values}");
         }
     }
 

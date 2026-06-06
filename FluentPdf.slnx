@@ -1,4 +1,11 @@
 <Solution>
+  <Folder Name="/adapters/">
+    <Project Path="adapters/FluentPdf.Adapters.QuestPdf/FluentPdf.Adapters.QuestPdf.csproj" />
+    <Project Path="adapters/FluentPdf.Adapters.iText/FluentPdf.Adapters.iText.csproj" />
+  </Folder>
+  <Folder Name="/tools/">
+    <Project Path="tools/FluentPdf.Visual/FluentPdf.Visual.csproj" />
+  </Folder>
   <Folder Name="/samples/">
     <Project Path="samples/FluentPdf.Samples/FluentPdf.Samples.csproj" />
   </Folder>
@@ -17,5 +24,8 @@
     <Project Path="tests/FluentPdf.Infrastructure.UnitTests/FluentPdf.Infrastructure.UnitTests.csproj" />
     <Project Path="tests/FluentPdf.Kernel.UnitTests/FluentPdf.Kernel.UnitTests.csproj" />
     <Project Path="tests/FluentPdf.Samples.UnitTests/FluentPdf.Samples.UnitTests.csproj" />
+    <Project Path="tests/FluentPdf.Adapters.QuestPdf.ConformanceTests/FluentPdf.Adapters.QuestPdf.ConformanceTests.csproj" />
+    <Project Path="tests/FluentPdf.Adapters.iText.ConformanceTests/FluentPdf.Adapters.iText.ConformanceTests.csproj" />
+    <Project Path="tests/FluentPdf.Visual.UnitTests/FluentPdf.Visual.UnitTests.csproj" />
   </Folder>
 </Solution>

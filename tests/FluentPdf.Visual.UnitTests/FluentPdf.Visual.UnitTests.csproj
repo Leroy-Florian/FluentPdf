@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <NuGetAudit>false</NuGetAudit>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../../tools/FluentPdf.Visual/FluentPdf.Visual.csproj" />
+    <ProjectReference Include="../../adapters/FluentPdf.Adapters.QuestPdf/FluentPdf.Adapters.QuestPdf.csproj" />
+    <ProjectReference Include="../../adapters/FluentPdf.Adapters.iText/FluentPdf.Adapters.iText.csproj" />
+    <ProjectReference Include="../../samples/FluentPdf.Samples/FluentPdf.Samples.csproj" />
+  </ItemGroup>
+
+</Project>

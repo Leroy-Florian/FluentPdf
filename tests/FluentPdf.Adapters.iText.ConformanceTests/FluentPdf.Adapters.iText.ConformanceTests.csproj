@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <NuGetAudit>false</NuGetAudit>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../../src/FluentPdf.Conformance/FluentPdf.Conformance.csproj" />
+    <ProjectReference Include="../../adapters/FluentPdf.Adapters.iText/FluentPdf.Adapters.iText.csproj" />
+  </ItemGroup>
+
+</Project>

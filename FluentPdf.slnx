@@ -16,5 +16,6 @@
     <Project Path="tests/FluentPdf.Infrastructure.ConformanceTests/FluentPdf.Infrastructure.ConformanceTests.csproj" />
     <Project Path="tests/FluentPdf.Infrastructure.UnitTests/FluentPdf.Infrastructure.UnitTests.csproj" />
     <Project Path="tests/FluentPdf.Kernel.UnitTests/FluentPdf.Kernel.UnitTests.csproj" />
+    <Project Path="tests/FluentPdf.Samples.UnitTests/FluentPdf.Samples.UnitTests.csproj" />
   </Folder>
 </Solution>

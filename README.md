@@ -115,8 +115,16 @@ public sealed class InvoiceTemplate : IDocumentTemplate<InvoiceDto>
 }
 ```
 
-See [`samples/FluentPdf.Samples`](samples/FluentPdf.Samples) for the full, compiling invoice
-example.
+See [`samples/FluentPdf.Samples`](samples/FluentPdf.Samples) for the full, compiling examples:
+
+- **Invoice** (`Invoice/`) — the minimal end-to-end walkthrough.
+- **Financial report** (`FinancialReport/`) — a deliberately complex, multi-section quarterly
+  report (cover, KPI scorecard, three financial statements, segment breakdown, risk register,
+  sign-off) decomposed into small **reusable business blocks**. The keystone
+  `FinancialStatementComponent` is fed the income statement, balance sheet and cash-flow
+  statement in turn, and a separate `BoardOnePagerTemplate` re-composes the very same blocks
+  into a one-page briefing — demonstrating blocks that are authored once and reused across
+  documents.
 
 ## Projects
 

@@ -1,0 +1,31 @@
+<Project>
+  <PropertyGroup>
+    <!-- Common settings for every project in the repository. -->
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
+
+    <!-- Run IDExxxx analyzers (collection expressions, etc.) at build time, not only in the IDE. -->
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+
+    <!-- Force bin/obj to stay in each project's folder. -->
+    <BaseOutputPath>$(MSBuildProjectDirectory)/bin/</BaseOutputPath>
+    <BaseIntermediateOutputPath>$(MSBuildProjectDirectory)/obj/</BaseIntermediateOutputPath>
+  </PropertyGroup>
+
+  <!-- Shared NuGet package metadata (only emitted by packable projects). -->
+  <PropertyGroup>
+    <Authors>Leroy-Florian</Authors>
+    <Company>Leroy-Florian</Company>
+    <Product>FluentPdf</Product>
+    <PackageProjectUrl>https://github.com/Leroy-Florian/FluentPdf</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/Leroy-Florian/FluentPdf</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <Description>A library-agnostic fluent builder for PDF documents, built on DDD and hexagonal architecture.</Description>
+    <PackageTags>pdf;builder;fluent;ddd;hexagonal;document</PackageTags>
+    <Version>0.1.0</Version>
+  </PropertyGroup>
+</Project>

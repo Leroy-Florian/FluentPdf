@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>FluentPdf.Application</RootNamespace>
+    <AssemblyName>FluentPdf.Application</AssemblyName>
+    <Description>The fluent builder, the IPdfRenderer port and the rendering use case for FluentPdf. This is the package consumers reference directly.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../FluentPdf.Domain/FluentPdf.Domain.csproj" />
+    <ProjectReference Include="../FluentPdf.Kernel/FluentPdf.Kernel.csproj" />
+  </ItemGroup>
+
+</Project>

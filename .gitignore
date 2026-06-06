@@ -1,0 +1,34 @@
+## .NET build artifacts
+bin/
+obj/
+[Dd]ebug/
+[Rr]elease/
+*.user
+*.suo
+
+## Test / coverage
+[Tt]est[Rr]esults/
+coverage*.json
+coverage*.xml
+coverage*.cobertura.xml
+*.coverage
+*.coveragexml
+
+## Stryker mutation testing
+StrykerOutput/
+
+## Rider / VS
+.idea/
+.vs/
+
+## NuGet
+*.nupkg
+*.snupkg
+.packages/
+
+## OS
+.DS_Store
+Thumbs.db
+
+## Local tooling
+/.dotnet/

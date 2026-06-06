@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>FluentPdf.Kernel</RootNamespace>
+    <AssemblyName>FluentPdf.Kernel</AssemblyName>
+    <Description>Shared DDD building blocks (Result, Error, ValueObject, Entity, AggregateRoot) for FluentPdf.</Description>
+  </PropertyGroup>
+
+</Project>

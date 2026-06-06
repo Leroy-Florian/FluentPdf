@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>FluentPdf.Domain</RootNamespace>
+    <AssemblyName>FluentPdf.Domain</AssemblyName>
+    <Description>The library-agnostic PDF document model (aggregate, value objects and content elements) for FluentPdf.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../FluentPdf.Kernel/FluentPdf.Kernel.csproj" />
+  </ItemGroup>
+
+</Project>

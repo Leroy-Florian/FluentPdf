@@ -1,0 +1,35 @@
+{
+  "stryker-config": {
+    "solution": "FluentPdf.slnx",
+    "target-framework": "net10.0",
+    "reporters": [
+      "json",
+      "html",
+      "progress",
+      "cleartext"
+    ],
+    "verbosity": "info",
+    "concurrency": 4,
+    "mutation-level": "Standard",
+    "mutate": [
+      "**/*.cs",
+      "!**/obj/**/*.cs",
+      "!**/bin/**/*.cs",
+      "!**/AssemblyReference.cs",
+      "!**/Polyfills.cs"
+    ],
+    "ignore-methods": [
+      "ToString",
+      "GetHashCode",
+      "*Equals"
+    ],
+    "ignore-mutations": [
+      "string"
+    ],
+    "thresholds": {
+      "high": 90,
+      "low": 80,
+      "break": 70
+    }
+  }
+}

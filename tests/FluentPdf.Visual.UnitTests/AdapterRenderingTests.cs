@@ -3,6 +3,7 @@ using FluentPdf.Adapters.QuestPdf;
 using FluentPdf.Application.Rendering;
 using FluentPdf.Kernel;
 using FluentPdf.Samples.Contract;
+using FluentPdf.Samples.FinancialReport;
 using FluentPdf.Samples.Invoice;
 using FluentPdf.Visual;
 
@@ -45,6 +46,16 @@ public sealed class AdapterRenderingTests
 
         result.IsSuccess.Should().BeTrue();
         result.Value.PageCount.Should().BeGreaterThan(20);
+    }
+
+    [Theory]
+    [MemberData(nameof(Renderers))]
+    public void Both_adapters_render_the_financial_report_including_its_charts(IPdfRenderer renderer)
+    {
+        var result = FinancialReportSample.RenderFullReport(renderer);
+
+        result.IsSuccess.Should().BeTrue("charts are now drawn as embedded images");
+        result.Value.PageCount.Should().BeGreaterThan(1);
     }
 
     [Fact]

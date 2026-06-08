@@ -1,5 +1,6 @@
 <Solution>
   <Folder Name="/adapters/">
+    <Project Path="adapters/FluentPdf.Adapters.Shared/FluentPdf.Adapters.Shared.csproj" />
     <Project Path="adapters/FluentPdf.Adapters.QuestPdf/FluentPdf.Adapters.QuestPdf.csproj" />
     <Project Path="adapters/FluentPdf.Adapters.iText/FluentPdf.Adapters.iText.csproj" />
   </Folder>

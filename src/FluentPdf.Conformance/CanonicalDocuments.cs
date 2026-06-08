@@ -13,6 +13,10 @@ public static class CanonicalDocuments
     /// <summary>A unique marker string that must survive rendering into the output text.</summary>
     public const string TextMarker = "FluentPdf-conformance-marker-7f3a";
 
+    /// <summary>A real (1×1, opaque) PNG so adapters that decode images can render it.</summary>
+    public static byte[] OnePixelPng { get; } = Convert.FromBase64String(
+        "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==");
+
     /// <summary>A minimal document using only the baseline feature set.</summary>
     public static PdfDocument Baseline() =>
         PdfDocumentBuilder.Create()
@@ -70,7 +74,7 @@ public static class CanonicalDocuments
                     .Columns(2)
                     .HeaderRow(r => r.Cell("Name").Cell("Value"))
                     .Row(r => r.Cell("Alpha").Cell("1")))
-                .Image([0x89, 0x50, 0x4E, 0x47], ImageFormat.Png, 64d, 64d)
+                .Image(OnePixelPng, ImageFormat.Png, 64d, 64d)
                 .Chart(c => c
                     .Bar()
                     .Title("conformance chart")

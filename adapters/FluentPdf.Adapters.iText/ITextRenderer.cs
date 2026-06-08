@@ -1,8 +1,6 @@
 using FluentPdf.Application.Rendering;
 using FluentPdf.Domain;
 using FluentPdf.Kernel;
-using iText.IO.Font.Constants;
-using iText.Kernel.Font;
 using iText.Kernel.Pdf;
 using iText.Layout;
 using DomainDocument = FluentPdf.Domain.PdfDocument;
@@ -20,9 +18,7 @@ namespace FluentPdf.Adapters.IText;
 public sealed class ITextRenderer : IPdfRenderer
 {
     /// <inheritdoc />
-    public RendererDescriptor Descriptor { get; } = new(
-        "iText",
-        new RendererCapabilities(RendererCapabilities.Everything & ~PdfFeature.Chart));
+    public RendererDescriptor Descriptor { get; } = new("iText", RendererCapabilities.Full);
 
     /// <inheritdoc />
     public Result<RenderedPdf> Render(DomainDocument document)
@@ -50,8 +46,7 @@ public sealed class ITextRenderer : IPdfRenderer
         var pdf = new ITextPdfDocument(new PdfWriter(stream));
         ApplyMetadata(pdf, document.Metadata);
 
-        var font = PdfFontFactory.CreateFont(StandardFonts.HELVETICA);
-        var composer = new ITextComposer(font);
+        var composer = new ITextComposer();
 
         Document? layout = null;
         var ranges = new List<SectionRange>();

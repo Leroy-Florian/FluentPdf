@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>net8.0;net10.0</TargetFrameworks>
+    <RootNamespace>FluentPdf.Adapters.Shared</RootNamespace>
+    <AssemblyName>FluentPdf.Adapters.Shared</AssemblyName>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../../src/FluentPdf.Domain/FluentPdf.Domain.csproj" />
+    <ProjectReference Include="../../src/FluentPdf.Kernel/FluentPdf.Kernel.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="SkiaSharp" />
+    <PackageReference Include="SkiaSharp.NativeAssets.Linux" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Fonts/LiberationSans-Regular.ttf" />
+    <EmbeddedResource Include="Fonts/LiberationSans-Bold.ttf" />
+    <EmbeddedResource Include="Fonts/LiberationSans-Italic.ttf" />
+    <EmbeddedResource Include="Fonts/LiberationSans-BoldItalic.ttf" />
+  </ItemGroup>
+
+</Project>

@@ -1,4 +1,5 @@
 using System.Globalization;
+using FluentPdf.Adapters.Shared;
 using FluentPdf.Domain;
 using FluentPdf.Domain.Content;
 using FluentPdf.Domain.Styling;
@@ -27,7 +28,9 @@ internal static class QuestPdfComposer
                 page.MarginRight((float)section.Margins.Right, Unit.Point);
                 page.MarginBottom((float)section.Margins.Bottom, Unit.Point);
                 page.MarginLeft((float)section.Margins.Left, Unit.Point);
-                page.DefaultTextStyle(text => text.FontSize((float)DomainTextStyle.DefaultFontSize));
+                page.DefaultTextStyle(text => text
+                    .FontFamily(EmbeddedFonts.Family)
+                    .FontSize((float)DomainTextStyle.DefaultFontSize));
 
                 if (section.Header is not null)
                 {
@@ -91,8 +94,13 @@ internal static class QuestPdfComposer
                 ComposeRow(container, row);
                 break;
             case ChartBlock chart:
-                // Charts are declared unsupported; placeholder kept for direct (non-use-case) calls.
-                container.Text(chart.Title ?? "[chart]");
+                // Cap to the chart's intrinsic size, then fit within the available area
+                // (preserving aspect) so it never overflows the page in either dimension.
+                container
+                    .MaxWidth((float)chart.Width)
+                    .MaxHeight((float)chart.Height)
+                    .Image(SkiaChartRenderer.RenderPng(chart))
+                    .FitArea();
                 break;
             default:
                 break;
@@ -175,7 +183,7 @@ internal static class QuestPdfComposer
                 {
                     foreach (var cell in headerRow.Cells)
                     {
-                        ComposeCell(header.Cell(), cell);
+                        ComposeCell(header.Cell(), cell, isHeader: true);
                     }
                 });
             }
@@ -189,13 +197,24 @@ internal static class QuestPdfComposer
 
                 foreach (var cell in row.Cells)
                 {
-                    ComposeCell(descriptor.Cell(), cell);
+                    ComposeCell(descriptor.Cell(), cell, isHeader: false);
                 }
             }
         });
 
-    private static void ComposeCell(IContainer container, TableCell cell) =>
-        ComposeBlocks(Align(container.Padding(3f), cell.Alignment), cell.Blocks);
+    private static void ComposeCell(IContainer container, TableCell cell, bool isHeader)
+    {
+        var styled = container
+            .Border(RenderingTheme.BorderWidth)
+            .BorderColor(Hex(RenderingTheme.BorderColor));
+
+        if (isHeader)
+        {
+            styled = styled.Background(Hex(RenderingTheme.HeaderBackground));
+        }
+
+        ComposeBlocks(Align(styled.Padding(RenderingTheme.CellPadding), cell.Alignment), cell.Blocks);
+    }
 
     private static void ComposeRow(IContainer container, RowBlock row) =>
         container.Row(rowDescriptor =>
@@ -233,7 +252,7 @@ internal static class QuestPdfComposer
 
     private static void Style(TextSpanDescriptor span, DomainTextStyle style)
     {
-        span.FontSize((float)style.FontSize).FontColor(Hex(style.Color));
+        span.FontFamily(EmbeddedFonts.Family).FontSize((float)style.FontSize).FontColor(Hex(style.Color));
 
         if (style.IsBold)
         {
@@ -253,6 +272,9 @@ internal static class QuestPdfComposer
 
     private static string Hex(DomainColor color) =>
         $"#{color.Red:X2}{color.Green:X2}{color.Blue:X2}";
+
+    private static string Hex((byte R, byte G, byte B) color) =>
+        $"#{color.R:X2}{color.G:X2}{color.B:X2}";
 
     private static IEnumerable<(string Literal, string? Token)> Tokenize(string format)
     {

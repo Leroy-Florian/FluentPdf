@@ -8,6 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="../FluentPdf.Adapters.Shared/FluentPdf.Adapters.Shared.csproj" />
     <ProjectReference Include="../../src/FluentPdf.Application/FluentPdf.Application.csproj" />
     <ProjectReference Include="../../src/FluentPdf.Domain/FluentPdf.Domain.csproj" />
     <ProjectReference Include="../../src/FluentPdf.Kernel/FluentPdf.Kernel.csproj" />

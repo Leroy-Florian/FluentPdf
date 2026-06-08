@@ -1,5 +1,7 @@
+using FluentPdf.Adapters.Shared;
 using FluentPdf.Domain;
 using FluentPdf.Domain.Content;
+using iText.IO.Font;
 using iText.Kernel.Colors;
 using iText.Kernel.Font;
 using iText.Kernel.Geom;
@@ -17,10 +19,26 @@ using DomainTextStyle = FluentPdf.Domain.Styling.TextStyle;
 namespace FluentPdf.Adapters.IText;
 
 /// <summary>Maps the agnostic document model onto iText layout elements.</summary>
-internal sealed class ITextComposer(PdfFont font)
+internal sealed class ITextComposer
 {
+    private readonly PdfFont _regular = CreateFont(EmbeddedFonts.Regular);
+    private readonly PdfFont _bold = CreateFont(EmbeddedFonts.Bold);
+    private readonly PdfFont _italic = CreateFont(EmbeddedFonts.Italic);
+    private readonly PdfFont _boldItalic = CreateFont(EmbeddedFonts.BoldItalic);
+
     public static PageSize PageSizeOf(Section section) =>
         new((float)section.PageSize.Width, (float)section.PageSize.Height);
+
+    private static PdfFont CreateFont(byte[] bytes) =>
+        PdfFontFactory.CreateFont(bytes, PdfEncodings.IDENTITY_H, PdfFontFactory.EmbeddingStrategy.FORCE_EMBEDDED);
+
+    private PdfFont FontFor(DomainTextStyle style) => (style.IsBold, style.IsItalic) switch
+    {
+        (true, true) => _boldItalic,
+        (true, false) => _bold,
+        (false, true) => _italic,
+        _ => _regular,
+    };
 
     public void ComposeBody(Document layout, IReadOnlyList<IBlock> blocks)
     {
@@ -46,7 +64,7 @@ internal sealed class ITextComposer(PdfFont font)
         var page = pdf.GetPage(pageNumber);
         var size = page.GetPageSize();
         using var canvas = new Canvas(new PdfCanvas(page), size);
-        canvas.SetFont(font).SetFontSize(9f);
+        canvas.SetFont(_regular).SetFontSize(9f);
 
         if (section.Header is not null)
         {
@@ -115,14 +133,23 @@ internal sealed class ITextComposer(PdfFont font)
         TableBlock table => BuildTable(table),
         RowBlock row => BuildGrid(row),
         PageNumberField field => new Elem.Paragraph(field.Format),
-        ChartBlock chart => new Elem.Paragraph(chart.Title ?? "[chart]"),
+        ChartBlock chart => ChartImage(chart),
         _ => new Elem.Paragraph(string.Empty),
     };
 
-    private Elem.Paragraph BuildParagraph(Paragraph paragraph)
+    private static Elem.IBlockElement ChartImage(ChartBlock chart)
+    {
+        var image = new Elem.Image(iText.IO.Image.ImageDataFactory.Create(SkiaChartRenderer.RenderPng(chart)))
+            .SetWidth((float)chart.Width)
+            .SetHeight((float)chart.Height);
+
+        return new Elem.Div().Add(image);
+    }
+
+    private Elem.Paragraph BuildParagraph(Paragraph paragraph, DomainAlignment? alignmentOverride = null)
     {
         var element = new Elem.Paragraph().SetMargin(0f).SetMultipliedLeading(1.2f);
-        element.SetTextAlignment(Map(paragraph.Alignment));
+        element.SetTextAlignment(Map(alignmentOverride ?? paragraph.Alignment));
 
         foreach (var run in paragraph.Runs)
         {
@@ -132,23 +159,21 @@ internal sealed class ITextComposer(PdfFont font)
         return element;
     }
 
+    private void AddCellBlocks(Elem.Cell cell, IReadOnlyList<IBlock> blocks, DomainAlignment alignment)
+    {
+        foreach (var block in blocks)
+        {
+            cell.Add(block is Paragraph paragraph ? BuildParagraph(paragraph, alignment) : Convert(block));
+        }
+    }
+
     private Elem.Text BuildText(TextRun run)
     {
         var style = run.Style;
         var text = new Elem.Text(run.Text)
+            .SetFont(FontFor(style))
             .SetFontSize((float)style.FontSize)
-            .SetFont(font)
             .SetFontColor(Rgb(style.Color));
-
-        if (style.IsBold)
-        {
-            text.SetBold();
-        }
-
-        if (style.IsItalic)
-        {
-            text.SetItalic();
-        }
 
         if (style.IsUnderlined)
         {
@@ -183,9 +208,19 @@ internal sealed class ITextComposer(PdfFont font)
         {
             foreach (var tableCell in row.Cells)
             {
-                var cell = new Elem.Cell().SetPadding(3f);
+                var cell = new Elem.Cell()
+                    .SetPadding(RenderingTheme.CellPadding)
+                    .SetBorder(new SolidBorder(Rgb(RenderingTheme.BorderColor), RenderingTheme.BorderWidth));
                 cell.SetTextAlignment(Map(tableCell.Alignment));
-                AddBlocks(cell.Add, tableCell.Blocks);
+
+                if (row.IsHeader)
+                {
+                    cell.SetBackgroundColor(Rgb(RenderingTheme.HeaderBackground));
+                }
+
+                // The cell's alignment governs its content (matching the QuestPDF adapter), so
+                // paragraphs adopt it rather than their own default.
+                AddCellBlocks(cell, tableCell.Blocks, tableCell.Alignment);
 
                 if (row.IsHeader)
                 {
@@ -240,7 +275,9 @@ internal sealed class ITextComposer(PdfFont font)
         }
     }
 
-    private Color Rgb(DomainColor color) => new DeviceRgb(color.Red, color.Green, color.Blue);
+    private static Color Rgb(DomainColor color) => new DeviceRgb(color.Red, color.Green, color.Blue);
+
+    private static Color Rgb((byte R, byte G, byte B) color) => new DeviceRgb(color.R, color.G, color.B);
 
     private static TextAlignment Map(DomainAlignment alignment) => alignment switch
     {

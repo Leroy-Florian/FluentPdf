@@ -172,21 +172,26 @@ See [`samples/FluentPdf.Samples`](samples/FluentPdf.Samples) for the full, compi
 | `FluentPdf.Application` | The fluent builder, reusable components/templates, the `IPdfRenderer` and `ITextMeasurer` ports, the streaming `DocumentPaginator` and the rendering use case. **The package consumers reference.** |
 | `FluentPdf.Infrastructure` | Built-in adapters, incl. the `InMemoryPdfRenderer` reference implementation. |
 | `FluentPdf.Conformance` | The shared contract-test kit every adapter must pass. |
+| `FluentPdf.Adapters.Shared` | Shared adapter support: the embedded **Liberation Sans** font, the `SkiaChartRenderer` (chart → PNG) and the `RenderingTheme` (table borders, header shading, palette). |
 | `FluentPdf.Adapters.QuestPdf` | Real adapter backed by **QuestPDF** (SkiaSharp). Maps the model onto QuestPDF's layout; page-number fields use QuestPDF's native counters. |
 | `FluentPdf.Adapters.iText` | Real adapter backed by **iText 7**. Maps the model onto iText elements; headers/footers and "Page X of Y" are drawn once the page count is known. |
 | `FluentPdf.Visual` | A PDF visual-comparison engine (PDFium rasterisation): per-page similarity scoring and red diff heatmaps for baseline-regression and adapter review. |
 
-Both real adapters declare the `Chart` capability **unsupported** (charts aren't translated
-yet), so the use case refuses chart content rather than dropping it — and the conformance kit
-verifies that graceful refusal. They pass the same `PdfRendererContractTests` as the reference
-adapter.
+Both real adapters pass the same `PdfRendererContractTests` as the reference adapter, and share
+a deliberate design so their output is **visually consistent**:
+
+- the **same embedded font** (Liberation Sans) ⇒ identical glyph metrics;
+- the **same table styling** (light borders, shaded header, padding) from `RenderingTheme`;
+- **charts drawn once** by `SkiaChartRenderer` and embedded as the same image in both, so a
+  bar/line/pie looks identical regardless of the PDF library.
 
 ### Visual verification
 
-Two layout engines never produce identical pixels, so the visual engine is for **regression**
-(compare an adapter's output to a stored golden — identical ⇒ similarity `1.0`) and for
-**human review** (a red diff heatmap of where two PDFs differ). The adapter integration tests
-render the real samples through QuestPDF and iText, confirm the output is a valid, non-blank
+Two layout engines never produce byte-identical pixels (sub-pixel positioning and line-break
+algorithms differ), so the visual engine is for **regression** — compare an adapter's output
+to a stored golden, identical ⇒ similarity `1.0` — and for **human review** via a red diff
+heatmap. The adapter integration tests render the real samples (invoice, financial report
+with charts, 30-page contract) through QuestPDF and iText, confirm each is a valid, non-blank
 PDF whose text is present, and produce a diff for inspection.
 
 Layering (enforced by `FluentPdf.ArchitectureTests`):

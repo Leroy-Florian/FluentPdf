@@ -1,6 +1,8 @@
+using FluentPdf.Adapters.Shared;
 using FluentPdf.Application.Rendering;
 using FluentPdf.Domain;
 using FluentPdf.Kernel;
+using QuestPDF.Drawing;
 using QuestPDF.Fluent;
 using QuestPDF.Infrastructure;
 using DomainDocument = FluentPdf.Domain.PdfDocument;
@@ -19,12 +21,21 @@ namespace FluentPdf.Adapters.QuestPdf;
 /// </summary>
 public sealed class QuestPdfRenderer : IPdfRenderer
 {
-    static QuestPdfRenderer() => QuestPDF.Settings.License = LicenseType.Community;
+    static QuestPdfRenderer()
+    {
+        QuestPDF.Settings.License = LicenseType.Community;
+
+        // Register the embedded Liberation Sans so text metrics match the iText adapter.
+        FontManager.RegisterFont(new MemoryStream(EmbeddedFonts.Regular));
+        FontManager.RegisterFont(new MemoryStream(EmbeddedFonts.Bold));
+        FontManager.RegisterFont(new MemoryStream(EmbeddedFonts.Italic));
+        FontManager.RegisterFont(new MemoryStream(EmbeddedFonts.BoldItalic));
+    }
 
     /// <inheritdoc />
     public RendererDescriptor Descriptor { get; } = new(
         "QuestPDF",
-        new RendererCapabilities(RendererCapabilities.Everything & ~PdfFeature.Chart));
+        RendererCapabilities.Full);
 
     /// <inheritdoc />
     public Result<RenderedPdf> Render(DomainDocument document)

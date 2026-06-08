@@ -194,6 +194,28 @@ heatmap. The adapter integration tests render the real samples (invoice, financi
 with charts, 30-page contract) through QuestPDF and iText, confirm each is a valid, non-blank
 PDF whose text is present, and produce a diff for inspection.
 
+### CI quality gate
+
+`tools/FluentPdf.VisualGate` turns the engine into a release gate. It renders every sample
+through every adapter, flattens each page over white, and compares it to a committed golden
+baseline (`tests/VisualBaselines/`). Because an adapter is compared **to itself**, rendering
+is deterministic and a clean run scores `1.0000` on every page; any layout change drifts a
+page below the threshold and fails the build, writing the offending page and a red diff to
+`artifacts/visual-diff/`.
+
+```bash
+# Re-generate the baselines (run once in your CI image, then commit them):
+dotnet run --project tools/FluentPdf.VisualGate -c Release -- update
+
+# Gate a release / PR (exit code 1 on any visual drift):
+dotnet run --project tools/FluentPdf.VisualGate -c Release -- check --threshold 0.999
+```
+
+The [`visual-gate`](.github/workflows/visual-gate.yml) GitHub Actions workflow runs `check` on
+every push, PR and published release, and uploads the diff images when it fails. Baselines are
+environment-sensitive (font stack, library versions): regenerate them with `update` whenever
+the CI image or the QuestPDF/iText/SkiaSharp versions change.
+
 Layering (enforced by `FluentPdf.ArchitectureTests`):
 
 ```

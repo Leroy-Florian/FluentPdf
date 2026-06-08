@@ -1,0 +1,56 @@
+name: Visual regression gate
+
+# Renders every sample through the real adapters and compares each page against its committed
+# golden baseline. A layout regression (drift beyond the threshold) fails the build and the
+# diff images are uploaded as an artifact for inspection.
+#
+# Baselines are environment-sensitive (font stack, library versions). If you change the CI
+# image or bump QuestPDF/iText/SkiaSharp, regenerate them once and commit:
+#   dotnet run --project tools/FluentPdf.VisualGate -c Release -- update
+# (or trigger this workflow manually with `update` set to true).
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      update:
+        description: "Regenerate the golden baselines instead of checking"
+        type: boolean
+        default: false
+
+jobs:
+  visual-gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+
+      # Native dependencies for SkiaSharp (chart drawing) and PDFium (rasterisation).
+      - name: Install native libraries
+        run: sudo apt-get update && sudo apt-get install -y libfontconfig1
+
+      - name: Restore & build
+        run: dotnet build tools/FluentPdf.VisualGate/FluentPdf.VisualGate.csproj -c Release
+
+      - name: Visual gate (check)
+        if: ${{ github.event.inputs.update != 'true' }}
+        run: dotnet run --project tools/FluentPdf.VisualGate -c Release --no-build -- check
+
+      - name: Visual gate (update baselines)
+        if: ${{ github.event.inputs.update == 'true' }}
+        run: dotnet run --project tools/FluentPdf.VisualGate -c Release --no-build -- update
+
+      - name: Upload diffs on failure
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: visual-diff
+          path: artifacts/visual-diff
+          if-no-files-found: ignore

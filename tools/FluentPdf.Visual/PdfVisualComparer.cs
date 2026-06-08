@@ -48,13 +48,14 @@ public sealed class PdfVisualComparer(int colorTolerance = 48)
 
         for (var i = 0; i < common; i++)
         {
-            comparisons.Add(ComparePage(i + 1, pagesA[i], pagesB[i]));
+            comparisons.Add(ComparePages(i + 1, pagesA[i], pagesB[i]));
         }
 
         return new VisualComparisonReport(pagesA.Count, pagesB.Count, comparisons);
     }
 
-    private PageComparison ComparePage(int number, RasterPage a, RasterPage b)
+    /// <summary>Compares two already-rasterised pages, producing a similarity score and diff.</summary>
+    public PageComparison ComparePages(int number, RasterPage a, RasterPage b)
     {
         var width = Math.Min(a.Width, b.Width);
         var height = Math.Min(a.Height, b.Height);
@@ -69,9 +70,12 @@ public sealed class PdfVisualComparer(int colorTolerance = 48)
                 var ia = ((y * a.Width) + x) * 4;
                 var ib = ((y * b.Width) + x) * 4;
 
-                var delta = Math.Abs(a.Bgra[ia] - b.Bgra[ib])
-                    + Math.Abs(a.Bgra[ia + 1] - b.Bgra[ib + 1])
-                    + Math.Abs(a.Bgra[ia + 2] - b.Bgra[ib + 2]);
+                // Flatten over white before comparing, so partial/zero alpha (and the PNG
+                // round-trip of a golden baseline) cannot create spurious differences — we
+                // compare what the page would look like printed on white paper.
+                var delta = Math.Abs(OnWhite(a.Bgra, ia) - OnWhite(b.Bgra, ib))
+                    + Math.Abs(OnWhite(a.Bgra, ia + 1) - OnWhite(b.Bgra, ib + 1))
+                    + Math.Abs(OnWhite(a.Bgra, ia + 2) - OnWhite(b.Bgra, ib + 2));
 
                 var o = ((y * width) + x) * 4;
 
@@ -105,5 +109,13 @@ public sealed class PdfVisualComparer(int colorTolerance = 48)
             different,
             similarity,
             PngImage.EncodeRgba(width, height, diff));
+    }
+
+    /// <summary>Composites one BGRA channel over a white background using the pixel's alpha.</summary>
+    private static int OnWhite(byte[] bgra, int channelIndex)
+    {
+        var alpha = bgra[(channelIndex & ~3) + 3];
+        var value = bgra[channelIndex];
+        return ((value * alpha) + (255 * (255 - alpha))) / 255;
     }
 }

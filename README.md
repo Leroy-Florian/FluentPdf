@@ -203,12 +203,20 @@ is deterministic and a clean run scores `1.0000` on every page; any layout chang
 page below the threshold and fails the build, writing the offending page and a red diff to
 `artifacts/visual-diff/`.
 
+It scores each page with two metrics: a raw **pixel** similarity and a perceptual **SSIM**
+(structural similarity, the default — robust to imperceptible noise, sensitive to real layout
+shifts). Every page is also split into horizontal **bands**: the gate reports *which* band
+drifted (e.g. `band 3/12 (rows 166-249)`), and volatile zones (a dated header/footer) can be
+excluded with `--ignore-bands`. The page's score is the worst kept band, so a localised
+regression still fails the gate.
+
 ```bash
 # Re-generate the baselines (run once in your CI image, then commit them):
 dotnet run --project tools/FluentPdf.VisualGate -c Release -- update
 
 # Gate a release / PR (exit code 1 on any visual drift):
-dotnet run --project tools/FluentPdf.VisualGate -c Release -- check --threshold 0.999
+dotnet run --project tools/FluentPdf.VisualGate -c Release -- check \
+    --metric ssim --threshold 0.99 --bands 12 --ignore-bands 1,12
 ```
 
 The [`visual-gate`](.github/workflows/visual-gate.yml) GitHub Actions workflow runs `check` on

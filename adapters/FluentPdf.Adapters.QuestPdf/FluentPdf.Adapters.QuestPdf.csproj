@@ -16,8 +16,6 @@
 
   <ItemGroup>
     <PackageReference Include="QuestPDF" />
-    <!-- Used read-only to count pages of the generated output. -->
-    <PackageReference Include="itext7" />
   </ItemGroup>
 
 </Project>

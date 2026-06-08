@@ -6,8 +6,6 @@ using QuestPDF.Drawing;
 using QuestPDF.Fluent;
 using QuestPDF.Infrastructure;
 using DomainDocument = FluentPdf.Domain.PdfDocument;
-using ITextPdfDocument = iText.Kernel.Pdf.PdfDocument;
-using ITextPdfReader = iText.Kernel.Pdf.PdfReader;
 using QuestDocument = QuestPDF.Fluent.Document;
 
 namespace FluentPdf.Adapters.QuestPdf;
@@ -57,13 +55,6 @@ public sealed class QuestPdfRenderer : IPdfRenderer
             return Error.Validation("QuestPdf.RenderFailed", exception.Message);
         }
 
-        return RenderedPdf.Create(bytes, CountPages(bytes));
-    }
-
-    private static int CountPages(byte[] bytes)
-    {
-        using var reader = new ITextPdfReader(new MemoryStream(bytes));
-        using var pdf = new ITextPdfDocument(reader);
-        return pdf.GetNumberOfPages();
+        return RenderedPdf.Create(bytes, PdfPageCounter.Count(bytes));
     }
 }

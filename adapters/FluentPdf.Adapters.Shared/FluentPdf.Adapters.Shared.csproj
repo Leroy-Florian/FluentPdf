@@ -1,7 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net8.0;net10.0</TargetFrameworks>
+    <!-- Single target so the embedded fonts ship once (not duplicated per TFM); usable from
+         every modern consumer. -->
+    <TargetFramework>netstandard2.0</TargetFramework>
     <RootNamespace>FluentPdf.Adapters.Shared</RootNamespace>
     <AssemblyName>FluentPdf.Adapters.Shared</AssemblyName>
     <Description>Shared support for FluentPdf renderer adapters: the embedded Liberation Sans font, a SkiaSharp chart renderer and the common table/chart visual theme.</Description>
@@ -18,10 +20,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!-- Regular + bold only; italics are synthesised by the adapters to keep the package small. -->
     <EmbeddedResource Include="Fonts/LiberationSans-Regular.ttf" />
     <EmbeddedResource Include="Fonts/LiberationSans-Bold.ttf" />
-    <EmbeddedResource Include="Fonts/LiberationSans-Italic.ttf" />
-    <EmbeddedResource Include="Fonts/LiberationSans-BoldItalic.ttf" />
   </ItemGroup>
 
 </Project>

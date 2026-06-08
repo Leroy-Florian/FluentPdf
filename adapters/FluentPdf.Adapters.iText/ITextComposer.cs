@@ -14,7 +14,6 @@ using Elem = iText.Layout.Element;
 using ITextPdfDocument = iText.Kernel.Pdf.PdfDocument;
 using DomainColor = FluentPdf.Domain.Styling.Color;
 using DomainAlignment = FluentPdf.Domain.Styling.HorizontalAlignment;
-using DomainTextStyle = FluentPdf.Domain.Styling.TextStyle;
 
 namespace FluentPdf.Adapters.IText;
 
@@ -23,8 +22,6 @@ internal sealed class ITextComposer
 {
     private readonly PdfFont _regular = CreateFont(EmbeddedFonts.Regular);
     private readonly PdfFont _bold = CreateFont(EmbeddedFonts.Bold);
-    private readonly PdfFont _italic = CreateFont(EmbeddedFonts.Italic);
-    private readonly PdfFont _boldItalic = CreateFont(EmbeddedFonts.BoldItalic);
 
     public static PageSize PageSizeOf(Section section) =>
         new((float)section.PageSize.Width, (float)section.PageSize.Height);
@@ -32,13 +29,7 @@ internal sealed class ITextComposer
     private static PdfFont CreateFont(byte[] bytes) =>
         PdfFontFactory.CreateFont(bytes, PdfEncodings.IDENTITY_H, PdfFontFactory.EmbeddingStrategy.FORCE_EMBEDDED);
 
-    private PdfFont FontFor(DomainTextStyle style) => (style.IsBold, style.IsItalic) switch
-    {
-        (true, true) => _boldItalic,
-        (true, false) => _bold,
-        (false, true) => _italic,
-        _ => _regular,
-    };
+    private PdfFont FontFor(bool bold) => bold ? _bold : _regular;
 
     public void ComposeBody(Document layout, IReadOnlyList<IBlock> blocks)
     {
@@ -171,9 +162,14 @@ internal sealed class ITextComposer
     {
         var style = run.Style;
         var text = new Elem.Text(run.Text)
-            .SetFont(FontFor(style))
+            .SetFont(FontFor(style.IsBold))
             .SetFontSize((float)style.FontSize)
             .SetFontColor(Rgb(style.Color));
+
+        if (style.IsItalic)
+        {
+            text.SetItalic(); // faux italic (skew) — italic weights are not embedded
+        }
 
         if (style.IsUnderlined)
         {

@@ -23,11 +23,10 @@ public sealed class QuestPdfRenderer : IPdfRenderer
     {
         QuestPDF.Settings.License = LicenseType.Community;
 
-        // Register the embedded Liberation Sans so text metrics match the iText adapter.
+        // Register the embedded Liberation Sans (regular + bold) so text metrics match the
+        // iText adapter; italics are synthesised by QuestPDF when requested.
         FontManager.RegisterFont(new MemoryStream(EmbeddedFonts.Regular));
         FontManager.RegisterFont(new MemoryStream(EmbeddedFonts.Bold));
-        FontManager.RegisterFont(new MemoryStream(EmbeddedFonts.Italic));
-        FontManager.RegisterFont(new MemoryStream(EmbeddedFonts.BoldItalic));
     }
 
     /// <inheritdoc />

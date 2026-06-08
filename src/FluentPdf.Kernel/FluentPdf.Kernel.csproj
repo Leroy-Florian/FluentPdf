@@ -3,7 +3,7 @@
   <PropertyGroup>
     <RootNamespace>FluentPdf.Kernel</RootNamespace>
     <AssemblyName>FluentPdf.Kernel</AssemblyName>
-    <Description>Shared DDD building blocks (Result, Error, ValueObject, Entity, AggregateRoot) for FluentPdf.</Description>
+    <Description>Shared DDD building blocks (Result, Error, ValueObject, Entity, AggregateRoot) for FluentPdf. Pulled in automatically by the FluentPdf package.</Description>
   </PropertyGroup>
 
 </Project>

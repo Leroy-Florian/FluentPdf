@@ -1,0 +1,10 @@
+<Project>
+
+  <!-- Packable projects declare PackageReadmeFile=README.md (in Directory.Build.props); include
+       the repository README so packing succeeds. Evaluated here (in .targets) so IsPackable is
+       final. -->
+  <ItemGroup Condition="'$(IsPackable)' == 'true'">
+    <None Include="$(MSBuildThisFileDirectory)README.md" Pack="true" PackagePath="\" Visible="false" />
+  </ItemGroup>
+
+</Project>

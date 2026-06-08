@@ -1,0 +1,45 @@
+name: Release (pack & publish)
+
+# Builds, tests, packs the whole FluentPdf family and publishes to NuGet when a GitHub release
+# is published. Set the repository secret NUGET_API_KEY for the push to run.
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+jobs:
+  pack-publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+
+      # Native libraries for SkiaSharp (charts) and PDFium (visual tests).
+      - name: Install native libraries
+        run: sudo apt-get update && sudo apt-get install -y libfontconfig1
+
+      - name: Build & test
+        run: dotnet test FluentPdf.slnx -c Release
+
+      - name: Pack
+        run: dotnet pack FluentPdf.slnx -c Release -o artifacts
+
+      - name: Upload packages artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: nupkgs
+          path: artifacts/*.nupkg
+
+      - name: Publish to NuGet
+        if: ${{ github.event_name == 'release' && env.NUGET_API_KEY != '' }}
+        env:
+          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+        run: >
+          dotnet nuget push "artifacts/*.nupkg"
+          --api-key "$NUGET_API_KEY"
+          --source https://api.nuget.org/v3/index.json
+          --skip-duplicate

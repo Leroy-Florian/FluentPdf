@@ -224,6 +224,30 @@ every push, PR and published release, and uploads the diff images when it fails.
 environment-sensitive (font stack, library versions): regenerate them with `update` whenever
 the CI image or the QuestPDF/iText/SkiaSharp versions change.
 
+### NuGet packages
+
+The library ships as a small family of packages, but a consumer installs **one**: the adapter
+they want. Everything else is pulled in transitively — and the core never drags a PDF library.
+
+| Package | Pulls in | Install it when… |
+|---------|----------|------------------|
+| `FluentPdf` | `FluentPdf.Domain`, `FluentPdf.Kernel` | you build your own adapter |
+| `FluentPdf.Domain` / `FluentPdf.Kernel` | — | (transitive; never installed directly) |
+| `FluentPdf.Infrastructure` | `FluentPdf` | you want the in-memory reference renderer |
+| `FluentPdf.Conformance` | `FluentPdf`, xUnit | you author an adapter and want the contract tests |
+| `FluentPdf.Adapters.Shared` | `FluentPdf`, SkiaSharp | (transitive via an adapter) |
+| **`FluentPdf.Adapters.QuestPdf`** | `…Shared`, QuestPDF | **you render with QuestPDF** |
+| **`FluentPdf.Adapters.iText`** | `…Shared`, iText 7 | **you render with iText** |
+
+```bash
+dotnet add package FluentPdf.Adapters.QuestPdf   # → FluentPdf + Shared + QuestPDF, nothing else
+```
+
+So **your core has no transitive dependency on iText or QuestPDF** — only the adapter you pick
+brings its library (the QuestPDF adapter never pulls iText, and vice-versa). `dotnet pack
+FluentPdf.slnx` builds the whole family; the [`release`](.github/workflows/release.yml)
+workflow packs and pushes them to NuGet on a published release.
+
 Layering (enforced by `FluentPdf.ArchitectureTests`):
 
 ```

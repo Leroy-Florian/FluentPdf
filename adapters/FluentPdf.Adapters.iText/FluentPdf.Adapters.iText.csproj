@@ -4,16 +4,14 @@
     <TargetFrameworks>net8.0;net10.0</TargetFrameworks>
     <RootNamespace>FluentPdf.Adapters.IText</RootNamespace>
     <AssemblyName>FluentPdf.Adapters.iText</AssemblyName>
-    <IsPackable>false</IsPackable>
+    <Description>iText 7 renderer adapter for FluentPdf: renders the agnostic document model to PDF with iText.</Description>
     <!-- itext7.bouncy-castle-adapter pulls a transitively-flagged BouncyCastle build. -->
     <NuGetAudit>false</NuGetAudit>
   </PropertyGroup>
 
   <ItemGroup>
+    <!-- Shared brings the chart/font support and, transitively, the FluentPdf core package. -->
     <ProjectReference Include="../FluentPdf.Adapters.Shared/FluentPdf.Adapters.Shared.csproj" />
-    <ProjectReference Include="../../src/FluentPdf.Application/FluentPdf.Application.csproj" />
-    <ProjectReference Include="../../src/FluentPdf.Domain/FluentPdf.Domain.csproj" />
-    <ProjectReference Include="../../src/FluentPdf.Kernel/FluentPdf.Kernel.csproj" />
   </ItemGroup>
 
   <ItemGroup>

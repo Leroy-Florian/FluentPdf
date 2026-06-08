@@ -4,14 +4,12 @@
     <TargetFrameworks>net8.0;net10.0</TargetFrameworks>
     <RootNamespace>FluentPdf.Adapters.QuestPdf</RootNamespace>
     <AssemblyName>FluentPdf.Adapters.QuestPdf</AssemblyName>
-    <IsPackable>false</IsPackable>
+    <Description>QuestPDF renderer adapter for FluentPdf: renders the agnostic document model to PDF with QuestPDF.</Description>
   </PropertyGroup>
 
   <ItemGroup>
+    <!-- Shared brings the chart/font support and, transitively, the FluentPdf core package. -->
     <ProjectReference Include="../FluentPdf.Adapters.Shared/FluentPdf.Adapters.Shared.csproj" />
-    <ProjectReference Include="../../src/FluentPdf.Application/FluentPdf.Application.csproj" />
-    <ProjectReference Include="../../src/FluentPdf.Domain/FluentPdf.Domain.csproj" />
-    <ProjectReference Include="../../src/FluentPdf.Kernel/FluentPdf.Kernel.csproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -3,7 +3,7 @@
   <PropertyGroup>
     <RootNamespace>FluentPdf.Domain</RootNamespace>
     <AssemblyName>FluentPdf.Domain</AssemblyName>
-    <Description>The library-agnostic PDF document model (aggregate, value objects and content elements) for FluentPdf.</Description>
+    <Description>The library-agnostic PDF document model (aggregate, value objects and content elements) for FluentPdf. Pulled in automatically by the FluentPdf package.</Description>
   </PropertyGroup>
 
   <ItemGroup>

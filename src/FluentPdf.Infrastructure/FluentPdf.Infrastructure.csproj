@@ -7,9 +7,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <!-- Application is the 'FluentPdf' package; Domain/Kernel come through it (bundled inside). -->
     <ProjectReference Include="../FluentPdf.Application/FluentPdf.Application.csproj" />
-    <ProjectReference Include="../FluentPdf.Domain/FluentPdf.Domain.csproj" />
-    <ProjectReference Include="../FluentPdf.Kernel/FluentPdf.Kernel.csproj" />
   </ItemGroup>
 
 </Project>

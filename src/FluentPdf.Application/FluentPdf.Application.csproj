@@ -3,7 +3,9 @@
   <PropertyGroup>
     <RootNamespace>FluentPdf.Application</RootNamespace>
     <AssemblyName>FluentPdf.Application</AssemblyName>
-    <Description>The fluent builder, the IPdfRenderer port and the rendering use case for FluentPdf. This is the package consumers reference directly.</Description>
+    <!-- The main entry package consumers reference (directly, or transitively via an adapter). -->
+    <PackageId>FluentPdf</PackageId>
+    <Description>FluentPdf — a library-agnostic fluent builder for PDF documents (document model, fluent API, IPdfRenderer/ITextMeasurer ports, streaming paginator). Add a renderer adapter (e.g. FluentPdf.Adapters.QuestPdf or FluentPdf.Adapters.iText) to emit PDFs.</Description>
   </PropertyGroup>
 
   <ItemGroup>

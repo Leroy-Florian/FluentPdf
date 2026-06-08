@@ -199,16 +199,9 @@ public sealed class RiskRegisterComponent : IBlockComponent<IReadOnlyList<RiskEn
 {
     public Result<IReadOnlyList<IBlock>> Build(IReadOnlyList<RiskEntry> risks) =>
         BlockComposer.Compose(blocks => blocks
-            .Table(table => table
-                .Columns(4)
-                .HeaderRow(row => row
-                    .Cell("Risk")
-                    .Cell("Likelihood")
-                    .Cell("Impact")
-                    .Cell("Mitigation"))
-                .Rows(risks, (row, risk) => row
-                    .Cell(risk.Title)
-                    .Cell(risk.Likelihood)
-                    .Cell(risk.Impact)
-                    .Cell(risk.Mitigation))));
+            .Table(risks, table => table
+                .Column("Risk", risk => risk.Title)
+                .Column("Likelihood", risk => risk.Likelihood)
+                .Column("Impact", risk => risk.Impact)
+                .Column("Mitigation", risk => risk.Mitigation)));
 }

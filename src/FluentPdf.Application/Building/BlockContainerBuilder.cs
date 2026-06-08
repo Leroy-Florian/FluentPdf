@@ -150,6 +150,22 @@ public abstract class BlockContainerBuilder<TSelf>
         return Self;
     }
 
+    /// <summary>
+    /// Appends a column-oriented, data-bound table: declare each column once (header + value) and
+    /// the rows are derived from <paramref name="items"/>. See <see cref="DataTableBuilder{T}"/>.
+    /// </summary>
+    public TSelf Table<TItem>(IEnumerable<TItem> items, Action<DataTableBuilder<TItem>> configure)
+    {
+        if (items is null || configure is null)
+        {
+            AddBlocks(Result.Failure<IReadOnlyList<IBlock>>(Error.NullValue));
+            return Self;
+        }
+
+        AddBlocks(DataTable.For(configure).Build([.. items]));
+        return Self;
+    }
+
     /// <summary>Appends an agnostic chart (bar, line or pie).</summary>
     public TSelf Chart(Action<ChartBuilder> configure)
     {

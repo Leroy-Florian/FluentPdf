@@ -23,6 +23,29 @@ public sealed class TableBuilder
     /// <summary>Adds a body row.</summary>
     public TableBuilder Row(Action<TableRowBuilder> configure) => AddRow(false, configure);
 
+    /// <summary>
+    /// Adds one body row per item in <paramref name="items"/>, binding the data straight into
+    /// the table without an out-of-band <c>foreach</c>. A null sequence or row builder surfaces
+    /// as a single failure.
+    /// </summary>
+    public TableBuilder Rows<T>(IEnumerable<T> items, Action<TableRowBuilder, T> row)
+    {
+        if (items is null || row is null)
+        {
+            _rows.Add(Result.Failure<TableRow>(Error.NullValue));
+            return this;
+        }
+
+        foreach (var item in items)
+        {
+            var builder = new TableRowBuilder();
+            row(builder, item);
+            _rows.Add(builder.Build(false));
+        }
+
+        return this;
+    }
+
     internal Result<TableBlock> Build()
     {
         var rows = ResultList.Collect(_rows);
@@ -53,6 +76,27 @@ public sealed class TableRowBuilder
     public TableRowBuilder Cell(string text, HorizontalAlignment alignment = HorizontalAlignment.Left)
     {
         _cells.Add(TableCell.FromText(text, alignment));
+        return this;
+    }
+
+    /// <summary>
+    /// Adds a cell containing a single styled paragraph. Saves dropping into the full
+    /// <see cref="Cell(Action{CellBuilder})"/> form just to apply a text style — the verbose
+    /// pattern that recurs across data tables (right-aligned, coloured amounts and totals).
+    /// </summary>
+    public TableRowBuilder Cell(
+        string text,
+        TextStyle? style,
+        HorizontalAlignment alignment = HorizontalAlignment.Left)
+    {
+        // Mirror Cell(text, alignment): the cell carries the alignment, the paragraph keeps the
+        // default left flow — only the run's style differs.
+        var paragraph = Paragraph.FromText(text, style);
+
+        _cells.Add(paragraph.IsFailure
+            ? Result.Failure<TableCell>(paragraph.Error)
+            : TableCell.Create([paragraph.Value], alignment));
+
         return this;
     }
 

@@ -16,6 +16,27 @@ public sealed class RowBuilder
     public RowBuilder Column(Action<ColumnBuilder> configure) =>
         AddColumn(Domain.Content.Column.CreateAuto, configure);
 
+    /// <summary>
+    /// Adds one column per element of <paramref name="items"/>, binding a collection straight
+    /// into the row without an out-of-band <c>foreach</c>. A null sequence or body surfaces as a
+    /// single failure.
+    /// </summary>
+    public RowBuilder ForEach<T>(IEnumerable<T> items, Action<RowBuilder, T> body)
+    {
+        if (items is null || body is null)
+        {
+            _columns.Add(Result.Failure<Column>(Error.NullValue));
+            return this;
+        }
+
+        foreach (var item in items)
+        {
+            body(this, item);
+        }
+
+        return this;
+    }
+
     private RowBuilder AddColumn(
         Func<IReadOnlyList<IBlock>, Result<Column>> create,
         Action<ColumnBuilder> configure)

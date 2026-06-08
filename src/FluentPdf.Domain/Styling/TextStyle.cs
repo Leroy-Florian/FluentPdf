@@ -72,6 +72,10 @@ public sealed class TextStyle : ValueObject
         return new TextStyle(fontFamily.Trim(), fontSize, color, isBold, isItalic, isUnderlined);
     }
 
+    /// <summary>Returns a copy of this style with the given font family.</summary>
+    public TextStyle WithFontFamily(string fontFamily) =>
+        new(fontFamily, FontSize, Color, IsBold, IsItalic, IsUnderlined);
+
     /// <summary>Returns a copy of this style with the given font size.</summary>
     public TextStyle WithFontSize(double fontSize) =>
         new(FontFamily, fontSize, Color, IsBold, IsItalic, IsUnderlined);

@@ -27,6 +27,20 @@ public sealed class ParagraphBuilder
         return this;
     }
 
+    /// <summary>Appends a run with a style configured fluently from the default style.</summary>
+    public ParagraphBuilder Run(string text, Action<TextStyleBuilder> configure)
+    {
+        if (configure is null)
+        {
+            _runs.Add(Result.Failure<TextRun>(Error.NullValue));
+            return this;
+        }
+
+        var builder = new TextStyleBuilder();
+        configure(builder);
+        return Run(text, builder.Build());
+    }
+
     /// <summary>Appends a run using the default style.</summary>
     public ParagraphBuilder Text(string text) => Run(text);
 
@@ -35,6 +49,13 @@ public sealed class ParagraphBuilder
 
     /// <summary>Appends an italic run.</summary>
     public ParagraphBuilder Italic(string text) => Run(text, TextStyle.Default.WithItalic());
+
+    /// <summary>Appends an underlined run.</summary>
+    public ParagraphBuilder Underline(string text) => Run(text, TextStyle.Default.WithUnderline());
+
+    /// <summary>Appends a run in the given colour.</summary>
+    public ParagraphBuilder Colored(string text, Color color) =>
+        Run(text, TextStyle.Default.WithColor(color));
 
     internal Result<Paragraph> Build()
     {

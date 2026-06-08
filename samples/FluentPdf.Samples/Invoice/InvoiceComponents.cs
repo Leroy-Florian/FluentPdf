@@ -30,22 +30,16 @@ public sealed class InvoiceLinesComponent : IBlockComponent<InvoiceDto>
 {
     public Result<IReadOnlyList<IBlock>> Build(InvoiceDto invoice) =>
         BlockComposer.Compose(blocks => blocks
-            .Table(table =>
-            {
-                table.Columns(3)
-                    .HeaderRow(row => row
-                        .Cell("Description")
-                        .Cell("Qty", HorizontalAlignment.Right)
-                        .Cell("Total", HorizontalAlignment.Right));
-
-                foreach (var line in invoice.Lines)
-                {
-                    table.Row(row => row
-                        .Cell(line.Description)
-                        .Cell(Format(line.Quantity), HorizontalAlignment.Right)
-                        .Cell(Format(line.Total), HorizontalAlignment.Right));
-                }
-            })
+            .Table(table => table
+                .Columns(3)
+                .HeaderRow(row => row
+                    .Cell("Description")
+                    .Cell("Qty", HorizontalAlignment.Right)
+                    .Cell("Total", HorizontalAlignment.Right))
+                .Rows(invoice.Lines, (row, line) => row
+                    .Cell(line.Description)
+                    .Cell(Format(line.Quantity), HorizontalAlignment.Right)
+                    .Cell(Format(line.Total), HorizontalAlignment.Right)))
             .Spacer(8d)
             .Paragraph(p => p
                 .Align(HorizontalAlignment.Right)

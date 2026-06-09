@@ -1,4 +1,5 @@
 using FluentPdf.Adapters.IText;
+using FluentPdf.Adapters.PdfSharp;
 using FluentPdf.Adapters.QuestPdf;
 using FluentPdf.Application.Rendering;
 using FluentPdf.Charting.Skia;
@@ -23,6 +24,7 @@ public sealed class AdapterRenderingTests
     [
         [new QuestPdfRenderer()],
         [new ITextRenderer()],
+        [new PdfSharpRenderer()],
     ];
 
     // Adapters with the optional Skia chart renderer wired in (for chart-bearing samples).
@@ -30,6 +32,7 @@ public sealed class AdapterRenderingTests
     [
         [new QuestPdfRenderer(new SkiaChartRenderer())],
         [new ITextRenderer(new SkiaChartRenderer())],
+        [new PdfSharpRenderer(new SkiaChartRenderer())],
     ];
 
     [Theory]

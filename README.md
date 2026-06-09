@@ -197,8 +197,8 @@ Two layout engines never produce byte-identical pixels (sub-pixel positioning an
 algorithms differ), so the visual engine is for **regression** — compare an adapter's output
 to a stored golden, identical ⇒ similarity `1.0` — and for **human review** via a red diff
 heatmap. The adapter integration tests render the real samples (invoice, financial report
-with charts, 30-page contract) through QuestPDF and iText, confirm each is a valid, non-blank
-PDF whose text is present, and produce a diff for inspection.
+with charts, 30-page contract) through **every** adapter (QuestPDF, iText and PDFsharp),
+confirm each is a valid, non-blank PDF whose text is present, and produce a diff for inspection.
 
 ### CI quality gate
 

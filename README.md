@@ -11,6 +11,14 @@ other library, without the core ever depending on it.
 > architecture tests, `Result<T>` instead of business exceptions, centralized package
 > versions, unit tests and mutation testing (Stryker).
 
+**Measured, not assumed.** The agnostic layer is a thin pass-through, and a
+[BenchmarkDotNet suite](benchmarks/FluentPdf.Benchmarks) proves it: rendering the same document
+directly with the library vs. through FluentPdf shows the abstraction adds only **a few percent**
+of time (the PDF library's own work dominates — the no-library pipeline renders in *microseconds*
+where iText/QuestPDF take *milliseconds*) and a small, shrinking allocation overhead. The pipeline
+is also **thread-safe by construction**, so one renderer drives parallel, high-volume printing
+across every core with no extra memory — a [tested contract](#benchmarks), not a promise.
+
 ## Why "agnostic"?
 
 The heart of FluentPdf is an **immutable document model** (`FluentPdf.Domain`). It is the

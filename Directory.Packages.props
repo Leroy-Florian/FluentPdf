@@ -19,6 +19,11 @@
     <PackageVersion Include="SkiaSharp.NativeAssets.Linux" Version="2.88.9" />
   </ItemGroup>
 
+  <ItemGroup Label="Benchmark Dependencies">
+    <!-- Micro-benchmark harness for the raw-library vs FluentPdf-pipeline comparison. -->
+    <PackageVersion Include="BenchmarkDotNet" Version="0.15.8" />
+  </ItemGroup>
+
   <ItemGroup Label="Test Dependencies">
     <!-- Test Framework -->
     <PackageVersion Include="xunit" Version="2.9.3" />

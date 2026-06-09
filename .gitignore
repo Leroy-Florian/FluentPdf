@@ -17,6 +17,9 @@ coverage*.cobertura.xml
 ## Stryker mutation testing
 StrykerOutput/
 
+## BenchmarkDotNet
+BenchmarkDotNet.Artifacts/
+
 ## Rider / VS
 .idea/
 .vs/

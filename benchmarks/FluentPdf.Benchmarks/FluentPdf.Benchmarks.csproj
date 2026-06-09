@@ -1,0 +1,34 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>FluentPdf.Benchmarks</RootNamespace>
+    <AssemblyName>FluentPdf.Benchmarks</AssemblyName>
+    <IsPackable>false</IsPackable>
+    <!-- BenchmarkDotNet pulls a transitively-flagged dependency graph; this is a non-shipping
+         benchmark host, so suppress the audit to keep TreatWarningsAsErrors green. -->
+    <NuGetAudit>false</NuGetAudit>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- The FluentPdf pipeline under test plus the reference (no-library) adapter. -->
+    <ProjectReference Include="../../src/FluentPdf.Application/FluentPdf.Application.csproj" />
+    <ProjectReference Include="../../src/FluentPdf.Infrastructure/FluentPdf.Infrastructure.csproj" />
+    <ProjectReference Include="../../samples/FluentPdf.Samples/FluentPdf.Samples.csproj" />
+
+    <!-- The two real adapters, plus Shared for the fonts/theme the raw twins reuse so the
+         raw and FluentPdf documents are visually equivalent. -->
+    <ProjectReference Include="../../adapters/FluentPdf.Adapters.Shared/FluentPdf.Adapters.Shared.csproj" />
+    <ProjectReference Include="../../adapters/FluentPdf.Adapters.QuestPdf/FluentPdf.Adapters.QuestPdf.csproj" />
+    <ProjectReference Include="../../adapters/FluentPdf.Adapters.iText/FluentPdf.Adapters.iText.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="BenchmarkDotNet" />
+    <!-- The raw baselines drive these libraries directly, exactly as a caller would. -->
+    <PackageReference Include="QuestPDF" />
+    <PackageReference Include="itext7" />
+  </ItemGroup>
+
+</Project>

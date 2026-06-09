@@ -14,16 +14,7 @@ public static class InvoiceSample
 {
     public static Result<RenderedPdf> Render(IPdfRenderer renderer)
     {
-        var invoice = new InvoiceDto(
-            Number: "INV-001",
-            CustomerName: "Jane Doe",
-            Lines:
-            [
-                new InvoiceLine("Widget", 2, 9.99m),
-                new InvoiceLine("Gadget", 1, 19.99m),
-            ]);
-
-        var document = new InvoiceTemplate().Build(invoice);
+        var document = new InvoiceTemplate().Build(SampleData());
 
         if (document.IsFailure)
         {
@@ -34,6 +25,16 @@ public static class InvoiceSample
         // then renders it.
         return new RenderDocumentUseCase(renderer).Execute(document.Value);
     }
+
+    /// <summary>The sample invoice DTO, shared by the sample and the benchmarks.</summary>
+    public static InvoiceDto SampleData() => new(
+        Number: "INV-001",
+        CustomerName: "Jane Doe",
+        Lines:
+        [
+            new InvoiceLine("Widget", 2, 9.99m),
+            new InvoiceLine("Gadget", 1, 19.99m),
+        ]);
 
     /// <summary>Renders the sample invoice with the built-in in-memory adapter.</summary>
     public static Result<RenderedPdf> RenderWithInMemoryAdapter() =>

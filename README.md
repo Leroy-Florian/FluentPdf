@@ -176,6 +176,7 @@ See [`samples/FluentPdf.Samples`](samples/FluentPdf.Samples) for the full, compi
 | `FluentPdf.Adapters.QuestPdf` | Real adapter backed by **QuestPDF** (SkiaSharp). Maps the model onto QuestPDF's layout; page-number fields use QuestPDF's native counters. |
 | `FluentPdf.Adapters.iText` | Real adapter backed by **iText 7**. Maps the model onto iText elements; headers/footers and "Page X of Y" are drawn once the page count is known. |
 | `FluentPdf.Visual` | A PDF visual-comparison engine (PDFium rasterisation): per-page similarity scoring and red diff heatmaps for baseline-regression and adapter review. |
+| `FluentPdf.Benchmarks` | [BenchmarkDotNet](benchmarks/FluentPdf.Benchmarks) suite comparing the FluentPdf pipeline against hand-written QuestPDF/iText (the "abstraction tax"). |
 
 Both real adapters pass the same `PdfRendererContractTests` as the reference adapter, and share
 a deliberate design so their output is **visually consistent**:
@@ -223,6 +224,25 @@ The [`visual-gate`](.github/workflows/visual-gate.yml) GitHub Actions workflow r
 every push, PR and published release, and uploads the diff images when it fails. Baselines are
 environment-sensitive (font stack, library versions): regenerate them with `update` whenever
 the CI image or the QuestPDF/iText/SkiaSharp versions change.
+
+### Benchmarks
+
+Because FluentPdf interposes a pipeline (build the agnostic model → scan features → translate
+through the adapter) between your code and the PDF library, the
+[`FluentPdf.Benchmarks`](benchmarks/FluentPdf.Benchmarks) suite measures what that costs by
+rendering the **same document two ways** — the library driven directly vs. through FluentPdf —
+on a light invoice, a ~35-page contract and a chart-heavy report. A `[GlobalSetup]` guard refuses
+to run if the two paths produce different page counts, so the comparison stays honest.
+
+The headline: the time overhead is typically **within a few percent** (the PDF library's own work
+dominates — the no-library `InMemoryPdfRenderer` renders in microseconds where iText/QuestPDF take
+milliseconds), and the modest extra allocation shrinks as documents grow. Your **choice of
+library** matters far more than the abstraction. See the
+[benchmark README](benchmarks/FluentPdf.Benchmarks/README.md) for numbers and how to run them.
+
+```bash
+dotnet run -c Release --project benchmarks/FluentPdf.Benchmarks -- --filter '*Invoice*'
+```
 
 ### NuGet packages
 

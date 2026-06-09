@@ -90,15 +90,17 @@ public sealed class FinancialStatementComponent : IBlockComponent<FinancialState
                     .Cell("Current", HorizontalAlignment.Right)
                     .Cell("Prior", HorizontalAlignment.Right)
                     .Cell("Var %", HorizontalAlignment.Right))
-                .Rows(statement.Lines, (row, line) => row
-                    .Cell(cell => cell.Paragraph(p => RenderLabel(p, line)))
-                    .Cell(ReportFormatting.Amount(line.Current), AmountStyle(line), HorizontalAlignment.Right)
-                    .Cell(ReportFormatting.Amount(line.Prior), AmountStyle(line), HorizontalAlignment.Right)
-                    .Cell(
-                        ReportFormatting.SignedPercent(line.VariancePercent),
-                        line.Variance >= 0m ? ReportStyles.Favourable : ReportStyles.Adverse,
-                        HorizontalAlignment.Right)))
+                .Rows(statement.Lines, AppendLine))
             .Spacer(12d));
+
+    private static void AppendLine(TableRowBuilder row, StatementLine line) => row
+        .Cell(cell => cell.Paragraph(p => RenderLabel(p, line)))
+        .Cell(ReportFormatting.Amount(line.Current), AmountStyle(line), HorizontalAlignment.Right)
+        .Cell(ReportFormatting.Amount(line.Prior), AmountStyle(line), HorizontalAlignment.Right)
+        .Cell(
+            ReportFormatting.SignedPercent(line.VariancePercent),
+            line.Variance >= 0m ? ReportStyles.Favourable : ReportStyles.Adverse,
+            HorizontalAlignment.Right);
 
     private static void RenderLabel(ParagraphBuilder paragraph, StatementLine line)
     {
@@ -129,18 +131,20 @@ public sealed class SegmentBreakdownComponent : IBlockComponent<IReadOnlyList<Bu
                     .Cell("Op. profit", HorizontalAlignment.Right)
                     .Cell("Margin", HorizontalAlignment.Right)
                     .Cell("Headcount", HorizontalAlignment.Right))
-                .Rows(segments, (row, segment) => row
-                    .Cell(segment.Name)
-                    .Cell(ReportFormatting.Amount(segment.Revenue), HorizontalAlignment.Right)
-                    .Cell(ReportFormatting.Amount(segment.OperatingProfit), HorizontalAlignment.Right)
-                    .Cell(ReportFormatting.Percent(segment.Margin), HorizontalAlignment.Right)
-                    .Cell(ReportFormatting.Count(segment.Headcount), HorizontalAlignment.Right))
+                .Rows(segments, AppendSegment)
                 .Row(row => row
                     .Cell("Group total", ReportStyles.Strong)
                     .Cell(ReportFormatting.Amount(segments.Sum(s => s.Revenue)), ReportStyles.Strong, HorizontalAlignment.Right)
                     .Cell(ReportFormatting.Amount(segments.Sum(s => s.OperatingProfit)), ReportStyles.Strong, HorizontalAlignment.Right)
                     .Cell(ReportFormatting.Percent(GroupMargin(segments)), ReportStyles.Strong, HorizontalAlignment.Right)
                     .Cell(ReportFormatting.Count(segments.Sum(s => s.Headcount)), ReportStyles.Strong, HorizontalAlignment.Right))));
+
+    private static void AppendSegment(TableRowBuilder row, BusinessSegment segment) => row
+        .Cell(segment.Name)
+        .Cell(ReportFormatting.Amount(segment.Revenue), HorizontalAlignment.Right)
+        .Cell(ReportFormatting.Amount(segment.OperatingProfit), HorizontalAlignment.Right)
+        .Cell(ReportFormatting.Percent(segment.Margin), HorizontalAlignment.Right)
+        .Cell(ReportFormatting.Count(segment.Headcount), HorizontalAlignment.Right);
 
     private static double GroupMargin(IReadOnlyList<BusinessSegment> segments)
     {

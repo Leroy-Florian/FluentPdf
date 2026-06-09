@@ -4,6 +4,7 @@
     <Project Path="adapters/FluentPdf.Charting.Skia/FluentPdf.Charting.Skia.csproj" />
     <Project Path="adapters/FluentPdf.Adapters.QuestPdf/FluentPdf.Adapters.QuestPdf.csproj" />
     <Project Path="adapters/FluentPdf.Adapters.iText/FluentPdf.Adapters.iText.csproj" />
+    <Project Path="adapters/FluentPdf.Adapters.PdfSharp/FluentPdf.Adapters.PdfSharp.csproj" />
   </Folder>
   <Folder Name="/tools/">
     <Project Path="tools/FluentPdf.Visual/FluentPdf.Visual.csproj" />
@@ -29,6 +30,7 @@
     <Project Path="tests/FluentPdf.Samples.UnitTests/FluentPdf.Samples.UnitTests.csproj" />
     <Project Path="tests/FluentPdf.Adapters.QuestPdf.ConformanceTests/FluentPdf.Adapters.QuestPdf.ConformanceTests.csproj" />
     <Project Path="tests/FluentPdf.Adapters.iText.ConformanceTests/FluentPdf.Adapters.iText.ConformanceTests.csproj" />
+    <Project Path="tests/FluentPdf.Adapters.PdfSharp.ConformanceTests/FluentPdf.Adapters.PdfSharp.ConformanceTests.csproj" />
     <Project Path="tests/FluentPdf.Visual.UnitTests/FluentPdf.Visual.UnitTests.csproj" />
   </Folder>
 </Solution>

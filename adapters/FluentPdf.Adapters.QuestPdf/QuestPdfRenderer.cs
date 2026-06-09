@@ -12,10 +12,10 @@ namespace FluentPdf.Adapters.QuestPdf;
 
 /// <summary>
 /// A real <see cref="IPdfRenderer"/> backed by QuestPDF. It translates the agnostic document
-/// model into QuestPDF's fluent layout API and lets QuestPDF do its own (high-quality)
-/// pagination — page-number fields map onto QuestPDF's native page counters. Charts are not
-/// translated, so the adapter declares the <see cref="PdfFeature.Chart"/> capability
-/// unsupported and the rendering use case refuses chart content rather than dropping it.
+/// model into QuestPDF's fluent layout API and lets QuestPDF do its own pagination. Charts are
+/// only rendered when an <see cref="IChartRenderer"/> is supplied (e.g. the optional
+/// FluentPdf.Charting.Skia package); otherwise the adapter declares the
+/// <see cref="PdfFeature.Chart"/> capability unsupported — so the core stays free of SkiaSharp.
 /// </summary>
 public sealed class QuestPdfRenderer : IPdfRenderer
 {
@@ -29,10 +29,26 @@ public sealed class QuestPdfRenderer : IPdfRenderer
         FontManager.RegisterFont(new MemoryStream(EmbeddedFonts.Bold));
     }
 
+    private readonly IChartRenderer? _charts;
+
+    /// <summary>
+    /// Creates the renderer. Pass an <see cref="IChartRenderer"/> to enable chart rendering
+    /// (and advertise the <see cref="PdfFeature.Chart"/> capability); omit it to stay
+    /// dependency-light.
+    /// </summary>
+    public QuestPdfRenderer(IChartRenderer? chartRenderer = null)
+    {
+        _charts = chartRenderer;
+
+        var supported = chartRenderer is null
+            ? RendererCapabilities.Everything & ~PdfFeature.Chart
+            : RendererCapabilities.Everything;
+
+        Descriptor = new RendererDescriptor("QuestPDF", new RendererCapabilities(supported));
+    }
+
     /// <inheritdoc />
-    public RendererDescriptor Descriptor { get; } = new(
-        "QuestPDF",
-        RendererCapabilities.Full);
+    public RendererDescriptor Descriptor { get; }
 
     /// <inheritdoc />
     public Result<RenderedPdf> Render(DomainDocument document)
@@ -45,7 +61,7 @@ public sealed class QuestPdfRenderer : IPdfRenderer
         byte[] bytes;
         try
         {
-            bytes = QuestDocument.Create(container => QuestPdfComposer.Compose(container, document))
+            bytes = QuestDocument.Create(container => new QuestPdfComposer(_charts).Compose(container, document))
                 .WithMetadata(QuestPdfComposer.Metadata(document.Metadata))
                 .GeneratePdf();
         }

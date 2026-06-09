@@ -1,6 +1,7 @@
 using FluentPdf.Adapters.IText;
 using FluentPdf.Adapters.QuestPdf;
 using FluentPdf.Application.Rendering;
+using FluentPdf.Charting.Skia;
 using FluentPdf.Kernel;
 using FluentPdf.Samples.Contract;
 using FluentPdf.Samples.FinancialReport;
@@ -22,6 +23,13 @@ public sealed class AdapterRenderingTests
     [
         [new QuestPdfRenderer()],
         [new ITextRenderer()],
+    ];
+
+    // Adapters with the optional Skia chart renderer wired in (for chart-bearing samples).
+    public static IEnumerable<object[]> ChartRenderers =>
+    [
+        [new QuestPdfRenderer(new SkiaChartRenderer())],
+        [new ITextRenderer(new SkiaChartRenderer())],
     ];
 
     [Theory]
@@ -49,7 +57,7 @@ public sealed class AdapterRenderingTests
     }
 
     [Theory]
-    [MemberData(nameof(Renderers))]
+    [MemberData(nameof(ChartRenderers))]
     public void Both_adapters_render_the_financial_report_including_its_charts(IPdfRenderer renderer)
     {
         var result = FinancialReportSample.RenderFullReport(renderer);

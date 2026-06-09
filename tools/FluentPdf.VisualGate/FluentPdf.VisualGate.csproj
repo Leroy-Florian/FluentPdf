@@ -12,7 +12,7 @@
 
   <ItemGroup>
     <ProjectReference Include="../FluentPdf.Visual/FluentPdf.Visual.csproj" />
-    <ProjectReference Include="../../adapters/FluentPdf.Adapters.Shared/FluentPdf.Adapters.Shared.csproj" />
+    <ProjectReference Include="../../adapters/FluentPdf.Charting.Skia/FluentPdf.Charting.Skia.csproj" />
     <ProjectReference Include="../../adapters/FluentPdf.Adapters.QuestPdf/FluentPdf.Adapters.QuestPdf.csproj" />
     <ProjectReference Include="../../adapters/FluentPdf.Adapters.iText/FluentPdf.Adapters.iText.csproj" />
     <ProjectReference Include="../../samples/FluentPdf.Samples/FluentPdf.Samples.csproj" />

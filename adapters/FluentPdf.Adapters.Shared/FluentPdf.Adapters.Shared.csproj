@@ -6,17 +6,12 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <RootNamespace>FluentPdf.Adapters.Shared</RootNamespace>
     <AssemblyName>FluentPdf.Adapters.Shared</AssemblyName>
-    <Description>Shared support for FluentPdf renderer adapters: the embedded Liberation Sans font, a SkiaSharp chart renderer and the common table/chart visual theme.</Description>
+    <Description>Shared support for FluentPdf renderer adapters: the embedded Liberation Sans font and the common table/chart visual theme. Pure managed — no native dependencies.</Description>
   </PropertyGroup>
 
   <ItemGroup>
     <!-- Application is the 'FluentPdf' package; Domain/Kernel come through it (bundled inside). -->
     <ProjectReference Include="../../src/FluentPdf.Application/FluentPdf.Application.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="SkiaSharp" />
-    <PackageReference Include="SkiaSharp.NativeAssets.Linux" />
   </ItemGroup>
 
   <ItemGroup>

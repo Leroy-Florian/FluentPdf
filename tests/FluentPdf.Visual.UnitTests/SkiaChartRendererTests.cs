@@ -1,4 +1,4 @@
-using FluentPdf.Adapters.Shared;
+using FluentPdf.Charting.Skia;
 using FluentPdf.Domain.Content;
 
 namespace FluentPdf.Visual.UnitTests;
@@ -21,7 +21,7 @@ public sealed class SkiaChartRendererTests
             240d,
             "Trend").Value;
 
-        var png = SkiaChartRenderer.RenderPng(chart);
+        var png = new SkiaChartRenderer().RenderPng(chart);
 
         png.Should().StartWith([(byte)137, (byte)80, (byte)78, (byte)71]); // PNG signature
         png.Length.Should().BeGreaterThan(100);
@@ -38,7 +38,7 @@ public sealed class SkiaChartRendererTests
             320d,
             "Mix").Value;
 
-        SkiaChartRenderer.RenderPng(chart).Should().NotBeEmpty();
+        new SkiaChartRenderer().RenderPng(chart).Should().NotBeEmpty();
     }
 
     [Fact]
@@ -51,6 +51,6 @@ public sealed class SkiaChartRendererTests
             300d,
             200d).Value;
 
-        SkiaChartRenderer.RenderPng(chart).Should().Equal(SkiaChartRenderer.RenderPng(chart));
+        new SkiaChartRenderer().RenderPng(chart).Should().Equal(new SkiaChartRenderer().RenderPng(chart));
     }
 }

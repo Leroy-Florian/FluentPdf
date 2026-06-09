@@ -11,14 +11,33 @@ namespace FluentPdf.Adapters.IText;
 /// <summary>
 /// A real <see cref="IPdfRenderer"/> backed by iText 7. It maps the agnostic model onto
 /// iText's layout elements and lets iText paginate; running headers/footers and "Page X of Y"
-/// fields are drawn in a second pass once the final page count is known. Charts are not
-/// translated, so the adapter declares <see cref="PdfFeature.Chart"/> unsupported and the use
-/// case refuses chart content rather than dropping it.
+/// fields are drawn in a second pass once the final page count is known. Charts are only
+/// rendered when an <see cref="IChartRenderer"/> is supplied (e.g. the optional
+/// FluentPdf.Charting.Skia package); otherwise the adapter declares the
+/// <see cref="PdfFeature.Chart"/> capability unsupported.
 /// </summary>
 public sealed class ITextRenderer : IPdfRenderer
 {
+    private readonly IChartRenderer? _charts;
+
+    /// <summary>
+    /// Creates the renderer. Pass an <see cref="IChartRenderer"/> to enable chart rendering
+    /// (and advertise the <see cref="PdfFeature.Chart"/> capability); omit it to stay
+    /// dependency-light.
+    /// </summary>
+    public ITextRenderer(IChartRenderer? chartRenderer = null)
+    {
+        _charts = chartRenderer;
+
+        var supported = chartRenderer is null
+            ? RendererCapabilities.Everything & ~PdfFeature.Chart
+            : RendererCapabilities.Everything;
+
+        Descriptor = new RendererDescriptor("iText", new RendererCapabilities(supported));
+    }
+
     /// <inheritdoc />
-    public RendererDescriptor Descriptor { get; } = new("iText", RendererCapabilities.Full);
+    public RendererDescriptor Descriptor { get; }
 
     /// <inheritdoc />
     public Result<RenderedPdf> Render(DomainDocument document)
@@ -41,12 +60,12 @@ public sealed class ITextRenderer : IPdfRenderer
         }
     }
 
-    private static int Write(DomainDocument document, Stream stream)
+    private int Write(DomainDocument document, Stream stream)
     {
         var pdf = new ITextPdfDocument(new PdfWriter(stream));
         ApplyMetadata(pdf, document.Metadata);
 
-        var composer = new ITextComposer();
+        var composer = new ITextComposer(_charts);
 
         Document? layout = null;
         var ranges = new List<SectionRange>();
@@ -82,7 +101,6 @@ public sealed class ITextRenderer : IPdfRenderer
             previousEnd = end;
         }
 
-        // The document always has at least one section, so layout is non-null here.
         var total = pdf.GetNumberOfPages();
         foreach (var range in ranges)
         {

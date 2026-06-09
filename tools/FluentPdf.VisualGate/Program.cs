@@ -1,6 +1,7 @@
 using FluentPdf.Adapters.IText;
 using FluentPdf.Adapters.QuestPdf;
 using FluentPdf.Application.Rendering;
+using FluentPdf.Charting.Skia;
 using FluentPdf.Kernel;
 using FluentPdf.Samples.Contract;
 using FluentPdf.Samples.FinancialReport;
@@ -33,10 +34,12 @@ var samples = new SampleDefinition[]
     new("contract", ContractSample.Render, Pages: 2),
 };
 
+// Inject the Skia chart renderer so the financial-report sample (which uses charts) renders.
+var charts = new SkiaChartRenderer();
 var adapters = new (string Name, IPdfRenderer Renderer)[]
 {
-    ("questpdf", new QuestPdfRenderer()),
-    ("itext", new ITextRenderer()),
+    ("questpdf", new QuestPdfRenderer(charts)),
+    ("itext", new ITextRenderer(charts)),
 };
 
 var rasterizer = new PdfRasterizer(700, 990);

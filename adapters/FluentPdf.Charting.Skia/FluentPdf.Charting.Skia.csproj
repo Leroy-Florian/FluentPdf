@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <RootNamespace>FluentPdf.Charting.Skia</RootNamespace>
+    <AssemblyName>FluentPdf.Charting.Skia</AssemblyName>
+    <Description>Optional SkiaSharp-based chart renderer for FluentPdf (IChartRenderer). Reference it only when you need charts; without it, the adapters stay free of SkiaSharp and its native assets.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../../src/FluentPdf.Application/FluentPdf.Application.csproj" />
+    <ProjectReference Include="../FluentPdf.Adapters.Shared/FluentPdf.Adapters.Shared.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="SkiaSharp" />
+    <PackageReference Include="SkiaSharp.NativeAssets.Linux" />
+  </ItemGroup>
+
+</Project>

@@ -172,18 +172,23 @@ See [`samples/FluentPdf.Samples`](samples/FluentPdf.Samples) for the full, compi
 | `FluentPdf.Application` | The fluent builder, reusable components/templates, the `IPdfRenderer` and `ITextMeasurer` ports, the streaming `DocumentPaginator` and the rendering use case. **The package consumers reference.** |
 | `FluentPdf.Infrastructure` | Built-in adapters, incl. the `InMemoryPdfRenderer` reference implementation. |
 | `FluentPdf.Conformance` | The shared contract-test kit every adapter must pass. |
-| `FluentPdf.Adapters.Shared` | Shared adapter support: the embedded **Liberation Sans** font, the `SkiaChartRenderer` (chart → PNG) and the `RenderingTheme` (table borders, header shading, palette). |
-| `FluentPdf.Adapters.QuestPdf` | Real adapter backed by **QuestPDF** (SkiaSharp). Maps the model onto QuestPDF's layout; page-number fields use QuestPDF's native counters. |
+| `FluentPdf.Adapters.Shared` | Shared adapter support — embedded **Liberation Sans** font and the `RenderingTheme` (table borders, header shading, palette). **Pure managed, no native deps.** |
+| `FluentPdf.Adapters.QuestPdf` | Real adapter backed by **QuestPDF**. Maps the model onto QuestPDF's layout; page-number fields use QuestPDF's native counters. |
 | `FluentPdf.Adapters.iText` | Real adapter backed by **iText 7**. Maps the model onto iText elements; headers/footers and "Page X of Y" are drawn once the page count is known. |
-| `FluentPdf.Visual` | A PDF visual-comparison engine (PDFium rasterisation): per-page similarity scoring and red diff heatmaps for baseline-regression and adapter review. |
+| `FluentPdf.Charting.Skia` | **Optional** SkiaSharp `IChartRenderer` (chart → PNG). Reference it only to render charts; this is the *only* package that pulls SkiaSharp. |
+| `FluentPdf.Visual` | A PDF visual-comparison engine (PDFium rasterisation): per-page similarity / SSIM scoring and red diff heatmaps. **Tooling only — never shipped to consumers.** |
 
 Both real adapters pass the same `PdfRendererContractTests` as the reference adapter, and share
-a deliberate design so their output is **visually consistent**:
+a deliberate design so their output is **visually consistent** (same embedded font ⇒ identical
+glyph metrics; same table styling from `RenderingTheme`).
 
-- the **same embedded font** (Liberation Sans) ⇒ identical glyph metrics;
-- the **same table styling** (light borders, shaded header, padding) from `RenderingTheme`;
-- **charts drawn once** by `SkiaChartRenderer` and embedded as the same image in both, so a
-  bar/line/pie looks identical regardless of the PDF library.
+**Charts are opt-in.** An adapter renders charts only when given an `IChartRenderer`
+(`new QuestPdfRenderer(new SkiaChartRenderer())`); without one it declares the `Chart`
+capability unsupported and the use case refuses chart content. So **SkiaSharp and its native
+assets stay out of the default footprint** — they arrive only if you reference
+`FluentPdf.Charting.Skia`. The chart is drawn once there, so a bar/line/pie looks identical in
+the QuestPDF and iText output. (PDFium, used by `FluentPdf.Visual`, is tooling-only and never
+reaches a consumer.)
 
 ### Visual verification
 
@@ -235,16 +240,19 @@ they want. Everything else is pulled in transitively — and the core never drag
 | `FluentPdf.Domain` / `FluentPdf.Kernel` | — | (transitive; never installed directly) |
 | `FluentPdf.Infrastructure` | `FluentPdf` | you want the in-memory reference renderer |
 | `FluentPdf.Conformance` | `FluentPdf`, xUnit | you author an adapter and want the contract tests |
-| `FluentPdf.Adapters.Shared` | `FluentPdf`, SkiaSharp | (transitive via an adapter) |
+| `FluentPdf.Adapters.Shared` | `FluentPdf` (fonts/theme, no native) | (transitive via an adapter) |
 | **`FluentPdf.Adapters.QuestPdf`** | `…Shared`, QuestPDF | **you render with QuestPDF** |
 | **`FluentPdf.Adapters.iText`** | `…Shared`, iText 7 | **you render with iText** |
+| `FluentPdf.Charting.Skia` | `FluentPdf`, `…Shared`, SkiaSharp | **only if you need charts** |
 
 ```bash
-dotnet add package FluentPdf.Adapters.QuestPdf   # → FluentPdf + Shared + QuestPDF, nothing else
+dotnet add package FluentPdf.Adapters.QuestPdf      # → FluentPdf + Shared + QuestPDF, no SkiaSharp
+dotnet add package FluentPdf.Charting.Skia          # add only if you render charts
 ```
 
 So **your core has no transitive dependency on iText or QuestPDF** — only the adapter you pick
-brings its library (the QuestPDF adapter never pulls iText, and vice-versa). `dotnet pack
+brings its library (the QuestPDF adapter never pulls iText, and vice-versa), and **SkiaSharp
+arrives only via the optional charting package**. `dotnet pack
 FluentPdf.slnx` builds the whole family; the [`release`](.github/workflows/release.yml)
 workflow packs and pushes them to NuGet on a published release.
 

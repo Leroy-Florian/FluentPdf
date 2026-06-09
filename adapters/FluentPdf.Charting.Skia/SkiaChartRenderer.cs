@@ -1,15 +1,17 @@
 using System.Globalization;
+using FluentPdf.Adapters.Shared;
+using FluentPdf.Application.Rendering;
 using FluentPdf.Domain.Content;
 using SkiaSharp;
 
-namespace FluentPdf.Adapters.Shared;
+namespace FluentPdf.Charting.Skia;
 
 /// <summary>
 /// Renders an agnostic <see cref="ChartBlock"/> to a PNG with SkiaSharp. Both adapters embed
 /// the resulting image at the chart's intrinsic size, so a bar/line/pie chart looks
 /// <em>identical</em> in the QuestPDF and iText output — the chart is drawn once, here.
 /// </summary>
-public static class SkiaChartRenderer
+public sealed class SkiaChartRenderer : IChartRenderer
 {
     private const float Scale = 2f; // supersample for crisp output when scaled to PDF points.
 
@@ -17,7 +19,7 @@ public static class SkiaChartRenderer
     private static readonly SKTypeface Bold = SKTypeface.FromData(SKData.CreateCopy(EmbeddedFonts.Bold));
 
     /// <summary>Renders the chart to PNG bytes sized <c>Width*Scale × Height*Scale</c> pixels.</summary>
-    public static byte[] RenderPng(ChartBlock chart)
+    public byte[] RenderPng(ChartBlock chart)
     {
         var width = (int)Math.Round(chart.Width * Scale);
         var height = (int)Math.Round(chart.Height * Scale);

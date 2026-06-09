@@ -1,4 +1,5 @@
 using FluentPdf.Adapters.Shared;
+using FluentPdf.Application.Rendering;
 using FluentPdf.Domain;
 using FluentPdf.Domain.Content;
 using iText.IO.Font;
@@ -18,7 +19,7 @@ using DomainAlignment = FluentPdf.Domain.Styling.HorizontalAlignment;
 namespace FluentPdf.Adapters.IText;
 
 /// <summary>Maps the agnostic document model onto iText layout elements.</summary>
-internal sealed class ITextComposer
+internal sealed class ITextComposer(IChartRenderer? charts)
 {
     private readonly PdfFont _regular = CreateFont(EmbeddedFonts.Regular);
     private readonly PdfFont _bold = CreateFont(EmbeddedFonts.Bold);
@@ -128,9 +129,14 @@ internal sealed class ITextComposer
         _ => new Elem.Paragraph(string.Empty),
     };
 
-    private static Elem.IBlockElement ChartImage(ChartBlock chart)
+    private Elem.IBlockElement ChartImage(ChartBlock chart)
     {
-        var image = new Elem.Image(iText.IO.Image.ImageDataFactory.Create(SkiaChartRenderer.RenderPng(chart)))
+        if (charts is null)
+        {
+            return new Elem.Paragraph(chart.Title ?? "[chart]");
+        }
+
+        var image = new Elem.Image(iText.IO.Image.ImageDataFactory.Create(charts.RenderPng(chart)))
             .SetWidth((float)chart.Width)
             .SetHeight((float)chart.Height);
 

@@ -1,5 +1,6 @@
 using System.Globalization;
 using FluentPdf.Adapters.Shared;
+using FluentPdf.Application.Rendering;
 using FluentPdf.Domain;
 using FluentPdf.Domain.Content;
 using FluentPdf.Domain.Styling;
@@ -15,9 +16,9 @@ using QuestMetadata = QuestPDF.Infrastructure.DocumentMetadata;
 namespace FluentPdf.Adapters.QuestPdf;
 
 /// <summary>Translates the agnostic document model into QuestPDF's fluent layout API.</summary>
-internal static class QuestPdfComposer
+internal sealed class QuestPdfComposer(IChartRenderer? charts)
 {
-    public static void Compose(IDocumentContainer container, DomainDocument document)
+    public void Compose(IDocumentContainer container, DomainDocument document)
     {
         foreach (var section in document.Sections)
         {
@@ -56,7 +57,7 @@ internal static class QuestPdfComposer
         Keywords = metadata.Keywords.Count > 0 ? string.Join(", ", metadata.Keywords) : null,
     };
 
-    private static void ComposeBlocks(IContainer container, IReadOnlyList<IBlock> blocks) =>
+    private void ComposeBlocks(IContainer container, IReadOnlyList<IBlock> blocks) =>
         container.Column(column =>
         {
             foreach (var block in blocks)
@@ -65,7 +66,7 @@ internal static class QuestPdfComposer
             }
         });
 
-    private static void ComposeBlock(IContainer container, IBlock block)
+    private void ComposeBlock(IContainer container, IBlock block)
     {
         switch (block)
         {
@@ -93,14 +94,18 @@ internal static class QuestPdfComposer
             case RowBlock row:
                 ComposeRow(container, row);
                 break;
-            case ChartBlock chart:
+            case ChartBlock chart when charts is not null:
                 // Cap to the chart's intrinsic size, then fit within the available area
                 // (preserving aspect) so it never overflows the page in either dimension.
                 container
                     .MaxWidth((float)chart.Width)
                     .MaxHeight((float)chart.Height)
-                    .Image(SkiaChartRenderer.RenderPng(chart))
+                    .Image(charts.RenderPng(chart))
                     .FitArea();
+                break;
+            case ChartBlock chart:
+                // No chart renderer supplied (capability not advertised); placeholder for safety.
+                container.Text(chart.Title ?? "[chart]");
                 break;
             default:
                 break;
@@ -140,7 +145,7 @@ internal static class QuestPdfComposer
             }
         });
 
-    private static void ComposeList(IContainer container, ListBlock list) =>
+    private void ComposeList(IContainer container, ListBlock list) =>
         container.Column(column =>
         {
             var number = list.StartNumber;
@@ -161,7 +166,7 @@ internal static class QuestPdfComposer
             }
         });
 
-    private static void ComposeTable(IContainer container, TableBlock table) =>
+    private void ComposeTable(IContainer container, TableBlock table) =>
         container.Table(descriptor =>
         {
             descriptor.ColumnsDefinition(columns =>
@@ -202,7 +207,7 @@ internal static class QuestPdfComposer
             }
         });
 
-    private static void ComposeCell(IContainer container, TableCell cell, bool isHeader)
+    private void ComposeCell(IContainer container, TableCell cell, bool isHeader)
     {
         var styled = container
             .Border(RenderingTheme.BorderWidth)
@@ -216,7 +221,7 @@ internal static class QuestPdfComposer
         ComposeBlocks(Align(styled.Padding(RenderingTheme.CellPadding), cell.Alignment), cell.Blocks);
     }
 
-    private static void ComposeRow(IContainer container, RowBlock row) =>
+    private void ComposeRow(IContainer container, RowBlock row) =>
         container.Row(rowDescriptor =>
         {
             var widths = row.ResolveWidths();

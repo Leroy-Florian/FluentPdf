@@ -33,6 +33,31 @@ jobs:
           --settings coverlet.runsettings
           --collect:"XPlat Code Coverage"
 
+  itext-version-matrix:
+    name: iText ${{ matrix.itext-major }}.x conformance
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        itext-major: ['7', '8']
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            8.0.x
+            10.0.x
+
+      # Compile and run the same adapter source through the full contract kit against the
+      # selected major, proving FluentPdf supports both iText 7.2.x and 8.x.
+      - name: Conformance against iText ${{ matrix.itext-major }}.x
+        run: >
+          dotnet test tests/FluentPdf.Adapters.iText.ConformanceTests/FluentPdf.Adapters.iText.ConformanceTests.csproj
+          --configuration Release
+          -p:ITextMajor=${{ matrix.itext-major }}
+
   mutation:
     runs-on: ubuntu-latest
     needs: build-and-test

@@ -10,8 +10,9 @@ name: Visual regression gate
 # (or trigger this workflow manually with `update` set to true).
 
 on:
+  # Mirror the CI triggers: trunk + integration/feature branches on push, and every PR.
   push:
-    branches: [main]
+    branches: [main, "claude/**"]
   pull_request:
   release:
     types: [published]

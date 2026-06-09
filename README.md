@@ -111,6 +111,16 @@ built-in default. The `DocumentPaginator` then:
 Measurement runs on `ReadOnlySpan<char>` (no per-word allocations on the hot path), keeping
 the time/RAM overhead minimal for high-volume workloads.
 
+**Safe for parallel mass printing.** The pipeline is thread-safe by construction: the domain
+model is immutable, builders are created per render, and the paginator, text measurer and adapter
+composers hold no mutable state — so a single renderer can be shared across all cores. This is a
+tested contract, not an aspiration: every adapter must pass
+`Renders_consistently_under_concurrent_load` (64 threads, one shared renderer, identical
+pagination), and the in-memory adapter additionally proves byte-identical output under parallel
+load and a flat managed heap across thousands of renders. The
+[parallel benchmark](benchmarks/FluentPdf.Benchmarks) confirms allocations stay identical whether
+a batch is rendered sequentially or in parallel.
+
 ```csharp
 .Footer(f => f.PageNumber("Page {page} of {pages}", HorizontalAlignment.Center))
 ```

@@ -34,6 +34,21 @@ public static class CanonicalDocuments
             .Build()
             .Value;
 
+    /// <summary>
+    /// A multi-page, baseline-feature document carrying the text marker. Used to exercise the
+    /// shared pagination pipeline under concurrent load, where a consistent page count and the
+    /// surviving marker prove the renderer holds no unsafe per-render state.
+    /// </summary>
+    public static PdfDocument Paged() =>
+        PdfDocumentBuilder.Create()
+            .Metadata(m => m.Title("Paged"))
+            .Section(s => s
+                .Paragraph(TextMarker)
+                .PageBreak().Paragraph("second page")
+                .PageBreak().Paragraph("third page"))
+            .Build()
+            .Value;
+
     /// <summary>A single section containing <paramref name="pageBreaks"/> explicit breaks,
     /// which must yield at least <c>pageBreaks + 1</c> pages.</summary>
     public static PdfDocument WithPageBreaks(int pageBreaks)

@@ -42,6 +42,22 @@ rasterisation, which both paths share identically through `SkiaChartRenderer`. A
 would mostly re-measure Skia while adding a large, easy-to-diverge reproduction of the report — so
 it is benchmarked through all three adapters instead, which is the more useful signal there.
 
+### Concurrency & mass rendering
+
+`ParallelRenderingBenchmarks` renders a batch of documents through a **single shared renderer**,
+sequentially and in parallel across all cores. It answers two questions for mass-print workloads:
+
+- **Does it scale?** The parallel/sequential time ratio should drop toward `1/cores`.
+- **Is it memory-safe?** The per-batch `Allocated` column must be the **same** sequential and
+  parallel — equal allocations prove parallelism retains no extra state and cannot blow memory up.
+
+Thread-safety *correctness* (as opposed to throughput) is locked in by tests, not benchmarks:
+`PdfRendererContractTests.Renders_consistently_under_concurrent_load` hammers a shared instance of
+**every** adapter from 64 threads and asserts identical pagination, and the in-memory unit tests
+add a byte-identical parallel-determinism check and a no-heap-growth check over thousands of
+renders. The whole pipeline is thread-safe by construction: the domain model is immutable, builders
+are per-render, and the paginator/measurer/composers are stateless.
+
 ## Running
 
 ```bash

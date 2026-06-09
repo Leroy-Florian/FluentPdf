@@ -2,6 +2,7 @@ using System.Text;
 using FluentAssertions;
 using FluentPdf.Application.Rendering;
 using FluentPdf.Application.UseCases;
+using FluentPdf.Kernel;
 using Xunit;
 
 namespace FluentPdf.Conformance;
@@ -120,6 +121,37 @@ public abstract class PdfRendererContractTests
             result.IsFailure.Should().BeTrue(
                 "the adapter must refuse content it cannot render rather than diverge silently");
             result.Error.Code.Should().Be("Render.UnsupportedFeatures");
+        }
+    }
+
+    [Fact]
+    public void Renders_consistently_under_concurrent_load()
+    {
+        // A single renderer instance is shared across threads, exactly as a mass-print host
+        // would reuse one. This is the contract that makes parallel batch rendering safe: it
+        // catches any mutable state hidden in the adapter or the pipeline it drives (the
+        // paginator, measurer, composer), which would otherwise corrupt output under load.
+        var renderer = CreateRenderer();
+        var document = CanonicalDocuments.Paged();
+
+        var expectedPageCount = renderer.Render(document).Value.PageCount;
+
+        const int renders = 64;
+        var results = new Result<RenderedPdf>[renders];
+
+        Parallel.For(0, renders, i => results[i] = renderer.Render(document));
+
+        results.Should().OnlyContain(
+            result => result.IsSuccess,
+            "a shared renderer must never fail when rendered from many threads at once");
+        results.Should().OnlyContain(
+            result => result.Value.PageCount == expectedPageCount,
+            "concurrent renders of one document must paginate identically to a serial render");
+
+        foreach (var result in results)
+        {
+            StartsWithPdfHeader(result.Value.Content).Should().BeTrue();
+            ExtractText(result.Value.Content).Should().Contain(CanonicalDocuments.TextMarker);
         }
     }
 

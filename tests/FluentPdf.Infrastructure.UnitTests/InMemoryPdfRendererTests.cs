@@ -133,4 +133,55 @@ public sealed class InMemoryPdfRendererTests
 
         Renderer.Render(document).Value.PageCount.Should().Be(expectedPages);
     }
+
+    [Fact]
+    public void Renders_byte_identically_under_parallel_load()
+    {
+        // The in-memory renderer is fully deterministic, so the strongest possible proof of
+        // thread-safety: a single shared instance hammered from every core must produce output
+        // byte-identical to a serial render. Any shared mutable state would corrupt some of them.
+        var document = PdfDocumentBuilder.Create()
+            .Section(s => s
+                .Paragraph("alpha")
+                .PageBreak().Paragraph("beta")
+                .PageBreak().Paragraph("gamma"))
+            .Build()
+            .Value;
+
+        var baseline = Renderer.Render(document).Value.ToArray();
+
+        var outputs = new byte[256][];
+        Parallel.For(0, outputs.Length, i => outputs[i] = Renderer.Render(document).Value.ToArray());
+
+        outputs.Should().OnlyContain(output => output.SequenceEqual(baseline),
+            "concurrent renders of one document on a shared renderer must be byte-identical");
+    }
+
+    [Fact]
+    public void Does_not_grow_the_managed_heap_across_many_renders()
+    {
+        // Mass printing renders thousands of documents through one renderer. Because nothing is
+        // retained between calls, the managed heap must return to its baseline — this guards
+        // against a future change that caches or accumulates per-render state and leaks.
+        var document = PdfDocumentBuilder.Create()
+            .Section(s => s
+                .Paragraph("warm up the pipeline")
+                .PageBreak().Paragraph("second page"))
+            .Build()
+            .Value;
+
+        _ = Renderer.Render(document).Value.PageCount;
+
+        var before = GC.GetTotalMemory(forceFullCollection: true);
+
+        for (var i = 0; i < 5_000; i++)
+        {
+            _ = Renderer.Render(document).Value.PageCount;
+        }
+
+        var after = GC.GetTotalMemory(forceFullCollection: true);
+
+        (after - before).Should().BeLessThan(2 * 1024 * 1024,
+            "rendering keeps no per-call state, so repeated renders must not accumulate memory");
+    }
 }

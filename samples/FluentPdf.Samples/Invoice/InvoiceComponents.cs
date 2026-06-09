@@ -30,22 +30,10 @@ public sealed class InvoiceLinesComponent : IBlockComponent<InvoiceDto>
 {
     public Result<IReadOnlyList<IBlock>> Build(InvoiceDto invoice) =>
         BlockComposer.Compose(blocks => blocks
-            .Table(table =>
-            {
-                table.Columns(3)
-                    .HeaderRow(row => row
-                        .Cell("Description")
-                        .Cell("Qty", HorizontalAlignment.Right)
-                        .Cell("Total", HorizontalAlignment.Right));
-
-                foreach (var line in invoice.Lines)
-                {
-                    table.Row(row => row
-                        .Cell(line.Description)
-                        .Cell(Format(line.Quantity), HorizontalAlignment.Right)
-                        .Cell(Format(line.Total), HorizontalAlignment.Right));
-                }
-            })
+            .Table(invoice.Lines, table => table
+                .Column("Description", line => line.Description)
+                .Column("Qty", line => line.Quantity)
+                .Column("Total", line => line.Total, Format))
             .Spacer(8d)
             .Paragraph(p => p
                 .Align(HorizontalAlignment.Right)
@@ -53,7 +41,4 @@ public sealed class InvoiceLinesComponent : IBlockComponent<InvoiceDto>
 
     private static string Format(decimal value) =>
         value.ToString("0.00", CultureInfo.InvariantCulture);
-
-    private static string Format(int value) =>
-        value.ToString(CultureInfo.InvariantCulture);
 }

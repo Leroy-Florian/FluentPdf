@@ -15,8 +15,7 @@ public sealed class SectionHeadingComponent : IBlockComponent<string>
 {
     public Result<IReadOnlyList<IBlock>> Build(string title) =>
         BlockComposer.Compose(blocks => blocks
-            .Paragraph(p => p.Run(title, ReportStyles.SectionTitle))
-            .Spacer(6d));
+            .Heading(title, ReportStyles.SectionTitle, spacingAfter: 6d));
 }
 
 /// <summary>The branded cover block: entity, report title, period and confidentiality.</summary>
@@ -61,30 +60,17 @@ public sealed class KpiScorecardComponent : IBlockComponent<IReadOnlyList<Kpi>>
     private const int CardsPerRow = 4;
 
     public Result<IReadOnlyList<IBlock>> Build(IReadOnlyList<Kpi> kpis) =>
-        BlockComposer.Compose(blocks =>
-        {
-            for (var offset = 0; offset < kpis.Count; offset += CardsPerRow)
-            {
-                var cards = kpis.Skip(offset).Take(CardsPerRow).ToList();
-
-                blocks
-                    .Row(row =>
-                    {
-                        foreach (var kpi in cards)
-                        {
-                            row.Column(card => card
-                                .Paragraph(p => p.Run(kpi.Label, ReportStyles.Muted))
-                                .Paragraph(p => p.Run(
-                                    $"{ReportFormatting.Amount(kpi.Current)} {kpi.Unit}",
-                                    ReportStyles.KpiValue))
-                                .Paragraph(p => p.Run(
-                                    $"{ReportFormatting.SignedPercent(kpi.ChangePercent)} YoY",
-                                    kpi.IsFavourable ? ReportStyles.Favourable : ReportStyles.Adverse)));
-                        }
-                    })
-                    .Spacer(10d);
-            }
-        });
+        BlockComposer.Compose(blocks => blocks
+            .ForEach(kpis.Chunk(CardsPerRow), (b, cards) => b
+                .Row(row => row.ForEach(cards, (r, kpi) => r.Column(card => card
+                    .Paragraph(p => p.Run(kpi.Label, ReportStyles.Muted))
+                    .Paragraph(p => p.Run(
+                        $"{ReportFormatting.Amount(kpi.Current)} {kpi.Unit}",
+                        ReportStyles.KpiValue))
+                    .Paragraph(p => p.Run(
+                        $"{ReportFormatting.SignedPercent(kpi.ChangePercent)} YoY",
+                        kpi.IsFavourable ? ReportStyles.Favourable : ReportStyles.Adverse)))))
+                .Spacer(10d)));
 }
 
 /// <summary>
@@ -96,36 +82,25 @@ public sealed class FinancialStatementComponent : IBlockComponent<FinancialState
 {
     public Result<IReadOnlyList<IBlock>> Build(FinancialStatement statement) =>
         BlockComposer.Compose(blocks => blocks
-            .Paragraph(p => p.Run(statement.Title, ReportStyles.SubHeading))
-            .Spacer(4d)
-            .Table(table =>
-            {
-                table
-                    .Columns(4)
-                    .HeaderRow(row => row
-                        .Cell("Line item")
-                        .Cell("Current", HorizontalAlignment.Right)
-                        .Cell("Prior", HorizontalAlignment.Right)
-                        .Cell("Var %", HorizontalAlignment.Right));
-
-                foreach (var line in statement.Lines)
-                {
-                    table.Row(row => row
-                        .Cell(cell => cell.Paragraph(p => RenderLabel(p, line)))
-                        .Cell(cell => cell
-                            .Align(HorizontalAlignment.Right)
-                            .Paragraph(p => p.Run(ReportFormatting.Amount(line.Current), AmountStyle(line))))
-                        .Cell(cell => cell
-                            .Align(HorizontalAlignment.Right)
-                            .Paragraph(p => p.Run(ReportFormatting.Amount(line.Prior), AmountStyle(line))))
-                        .Cell(cell => cell
-                            .Align(HorizontalAlignment.Right)
-                            .Paragraph(p => p.Run(
-                                ReportFormatting.SignedPercent(line.VariancePercent),
-                                line.Variance >= 0m ? ReportStyles.Favourable : ReportStyles.Adverse))));
-                }
-            })
+            .Heading(statement.Title, ReportStyles.SubHeading, spacingAfter: 4d)
+            .Table(table => table
+                .Columns(4)
+                .HeaderRow(row => row
+                    .Cell("Line item")
+                    .Cell("Current", HorizontalAlignment.Right)
+                    .Cell("Prior", HorizontalAlignment.Right)
+                    .Cell("Var %", HorizontalAlignment.Right))
+                .Rows(statement.Lines, AppendLine))
             .Spacer(12d));
+
+    private static void AppendLine(TableRowBuilder row, StatementLine line) => row
+        .Cell(cell => cell.Paragraph(p => RenderLabel(p, line)))
+        .Cell(ReportFormatting.Amount(line.Current), AmountStyle(line), HorizontalAlignment.Right)
+        .Cell(ReportFormatting.Amount(line.Prior), AmountStyle(line), HorizontalAlignment.Right)
+        .Cell(
+            ReportFormatting.SignedPercent(line.VariancePercent),
+            line.Variance >= 0m ? ReportStyles.Favourable : ReportStyles.Adverse,
+            HorizontalAlignment.Right);
 
     private static void RenderLabel(ParagraphBuilder paragraph, StatementLine line)
     {
@@ -148,42 +123,28 @@ public sealed class SegmentBreakdownComponent : IBlockComponent<IReadOnlyList<Bu
 {
     public Result<IReadOnlyList<IBlock>> Build(IReadOnlyList<BusinessSegment> segments) =>
         BlockComposer.Compose(blocks => blocks
-            .Table(table =>
-            {
-                table
-                    .Columns(5)
-                    .HeaderRow(row => row
-                        .Cell("Segment")
-                        .Cell("Revenue", HorizontalAlignment.Right)
-                        .Cell("Op. profit", HorizontalAlignment.Right)
-                        .Cell("Margin", HorizontalAlignment.Right)
-                        .Cell("Headcount", HorizontalAlignment.Right));
+            .Table(table => table
+                .Columns(5)
+                .HeaderRow(row => row
+                    .Cell("Segment")
+                    .Cell("Revenue", HorizontalAlignment.Right)
+                    .Cell("Op. profit", HorizontalAlignment.Right)
+                    .Cell("Margin", HorizontalAlignment.Right)
+                    .Cell("Headcount", HorizontalAlignment.Right))
+                .Rows(segments, AppendSegment)
+                .Row(row => row
+                    .Cell("Group total", ReportStyles.Strong)
+                    .Cell(ReportFormatting.Amount(segments.Sum(s => s.Revenue)), ReportStyles.Strong, HorizontalAlignment.Right)
+                    .Cell(ReportFormatting.Amount(segments.Sum(s => s.OperatingProfit)), ReportStyles.Strong, HorizontalAlignment.Right)
+                    .Cell(ReportFormatting.Percent(GroupMargin(segments)), ReportStyles.Strong, HorizontalAlignment.Right)
+                    .Cell(ReportFormatting.Count(segments.Sum(s => s.Headcount)), ReportStyles.Strong, HorizontalAlignment.Right))));
 
-                foreach (var segment in segments)
-                {
-                    table.Row(row => row
-                        .Cell(segment.Name)
-                        .Cell(ReportFormatting.Amount(segment.Revenue), HorizontalAlignment.Right)
-                        .Cell(ReportFormatting.Amount(segment.OperatingProfit), HorizontalAlignment.Right)
-                        .Cell(ReportFormatting.Percent(segment.Margin), HorizontalAlignment.Right)
-                        .Cell(ReportFormatting.Count(segment.Headcount), HorizontalAlignment.Right));
-                }
-
-                table.Row(row => row
-                    .Cell(cell => cell.Paragraph(p => p.Bold("Group total")))
-                    .Cell(cell => cell
-                        .Align(HorizontalAlignment.Right)
-                        .Paragraph(p => p.Bold(ReportFormatting.Amount(segments.Sum(s => s.Revenue)))))
-                    .Cell(cell => cell
-                        .Align(HorizontalAlignment.Right)
-                        .Paragraph(p => p.Bold(ReportFormatting.Amount(segments.Sum(s => s.OperatingProfit)))))
-                    .Cell(cell => cell
-                        .Align(HorizontalAlignment.Right)
-                        .Paragraph(p => p.Bold(ReportFormatting.Percent(GroupMargin(segments)))))
-                    .Cell(cell => cell
-                        .Align(HorizontalAlignment.Right)
-                        .Paragraph(p => p.Bold(ReportFormatting.Count(segments.Sum(s => s.Headcount))))));
-            }));
+    private static void AppendSegment(TableRowBuilder row, BusinessSegment segment) => row
+        .Cell(segment.Name)
+        .Cell(ReportFormatting.Amount(segment.Revenue), HorizontalAlignment.Right)
+        .Cell(ReportFormatting.Amount(segment.OperatingProfit), HorizontalAlignment.Right)
+        .Cell(ReportFormatting.Percent(segment.Margin), HorizontalAlignment.Right)
+        .Cell(ReportFormatting.Count(segment.Headcount), HorizontalAlignment.Right);
 
     private static double GroupMargin(IReadOnlyList<BusinessSegment> segments)
     {
@@ -196,31 +157,13 @@ public sealed class SegmentBreakdownComponent : IBlockComponent<IReadOnlyList<Bu
 public sealed class CommentaryComponent : IBlockComponent<ManagementCommentary>
 {
     public Result<IReadOnlyList<IBlock>> Build(ManagementCommentary commentary) =>
-        BlockComposer.Compose(blocks =>
-        {
-            blocks
-                .Paragraph(p => p.Run(commentary.Heading, ReportStyles.SubHeading))
-                .Spacer(4d);
-
-            foreach (var paragraph in commentary.Paragraphs)
-            {
-                blocks.Paragraph(paragraph);
-            }
-
-            if (commentary.Highlights.Count > 0)
-            {
-                blocks
-                    .Spacer(6d)
-                    .Paragraph(p => p.Run("Highlights", ReportStyles.Strong))
-                    .UnorderedList(list =>
-                    {
-                        foreach (var highlight in commentary.Highlights)
-                        {
-                            list.Item(highlight);
-                        }
-                    });
-            }
-        });
+        BlockComposer.Compose(blocks => blocks
+            .Heading(commentary.Heading, ReportStyles.SubHeading, spacingAfter: 4d)
+            .ForEach(commentary.Paragraphs, (b, paragraph) => b.Paragraph(paragraph))
+            .When(commentary.Highlights.Count > 0, b => b
+                .Spacer(6d)
+                .Paragraph(p => p.Run("Highlights", ReportStyles.Strong))
+                .UnorderedList(list => list.ForEach(commentary.Highlights, (items, highlight) => items.Item(highlight)))));
 }
 
 /// <summary>
@@ -260,23 +203,9 @@ public sealed class RiskRegisterComponent : IBlockComponent<IReadOnlyList<RiskEn
 {
     public Result<IReadOnlyList<IBlock>> Build(IReadOnlyList<RiskEntry> risks) =>
         BlockComposer.Compose(blocks => blocks
-            .Table(table =>
-            {
-                table
-                    .Columns(4)
-                    .HeaderRow(row => row
-                        .Cell("Risk")
-                        .Cell("Likelihood")
-                        .Cell("Impact")
-                        .Cell("Mitigation"));
-
-                foreach (var risk in risks)
-                {
-                    table.Row(row => row
-                        .Cell(risk.Title)
-                        .Cell(risk.Likelihood)
-                        .Cell(risk.Impact)
-                        .Cell(risk.Mitigation));
-                }
-            }));
+            .Table(risks, table => table
+                .Column("Risk", risk => risk.Title)
+                .Column("Likelihood", risk => risk.Likelihood)
+                .Column("Impact", risk => risk.Impact)
+                .Column("Mitigation", risk => risk.Mitigation)));
 }

@@ -59,6 +59,7 @@ public sealed class TextStyleTests
     {
         var style = TextStyle.Default;
 
+        style.WithFontFamily("Times").FontFamily.Should().Be("Times");
         style.WithFontSize(20d).FontSize.Should().Be(20d);
         style.WithColor(Color.White).Color.Should().Be(Color.White);
         style.WithBold().IsBold.Should().BeTrue();
@@ -66,6 +67,7 @@ public sealed class TextStyleTests
         style.WithUnderline().IsUnderlined.Should().BeTrue();
 
         // The original is untouched (immutability).
+        style.FontFamily.Should().Be(TextStyle.DefaultFontFamily);
         style.FontSize.Should().Be(TextStyle.DefaultFontSize);
         style.IsBold.Should().BeFalse();
     }

@@ -53,6 +53,30 @@ public abstract class BlockContainerBuilder<TSelf>
         return Self;
     }
 
+    /// <summary>
+    /// Appends a heading paragraph (bold by default) optionally followed by vertical spacing.
+    /// A convenience over <see cref="Paragraph(string, TextStyle, HorizontalAlignment)"/> for
+    /// the ubiquitous "title then gap" pattern, so callers stop hand-writing a paragraph plus a
+    /// magic-number <see cref="Spacer"/> every time.
+    /// </summary>
+    public TSelf Heading(
+        string text,
+        TextStyle? style = null,
+        HorizontalAlignment alignment = HorizontalAlignment.Left,
+        double spacingAfter = 0d)
+    {
+        AddBlock(Domain.Content.Paragraph
+            .FromText(text, style ?? TextStyle.Default.WithBold(), alignment)
+            .AsBlock());
+
+        if (spacingAfter > 0d)
+        {
+            Spacer(spacingAfter);
+        }
+
+        return Self;
+    }
+
     /// <summary>Appends a paragraph built from multiple styled runs.</summary>
     public TSelf Paragraph(Action<ParagraphBuilder> configure)
     {
@@ -126,6 +150,22 @@ public abstract class BlockContainerBuilder<TSelf>
         return Self;
     }
 
+    /// <summary>
+    /// Appends a column-oriented, data-bound table: declare each column once (header + value) and
+    /// the rows are derived from <paramref name="items"/>. See <see cref="DataTableBuilder{T}"/>.
+    /// </summary>
+    public TSelf Table<TItem>(IEnumerable<TItem> items, Action<DataTableBuilder<TItem>> configure)
+    {
+        if (items is null || configure is null)
+        {
+            AddBlocks(Result.Failure<IReadOnlyList<IBlock>>(Error.NullValue));
+            return Self;
+        }
+
+        AddBlocks(DataTable.For(configure).Build([.. items]));
+        return Self;
+    }
+
     /// <summary>Appends an agnostic chart (bar, line or pie).</summary>
     public TSelf Chart(Action<ChartBuilder> configure)
     {
@@ -168,6 +208,67 @@ public abstract class BlockContainerBuilder<TSelf>
         AddBlocks(component is null
             ? Result.Failure<IReadOnlyList<IBlock>>(Error.NullValue)
             : component(model));
+        return Self;
+    }
+
+    /// <summary>
+    /// Repeats <paramref name="body"/> for each item in <paramref name="items"/> without
+    /// breaking the fluent chain — the ergonomic replacement for stepping out of the builder
+    /// into a <c>foreach</c> loop. A null sequence or body surfaces as a single failure.
+    /// </summary>
+    public TSelf ForEach<TItem>(IEnumerable<TItem> items, Action<TSelf, TItem> body)
+    {
+        if (items is null || body is null)
+        {
+            AddBlock(Result.Failure<IBlock>(Error.NullValue));
+            return Self;
+        }
+
+        foreach (var item in items)
+        {
+            body(Self, item);
+        }
+
+        return Self;
+    }
+
+    /// <summary>
+    /// Runs <paramref name="body"/> only when <paramref name="condition"/> holds, keeping
+    /// conditional content inside the fluent chain instead of an out-of-band <c>if</c>.
+    /// </summary>
+    public TSelf When(bool condition, Action<TSelf> body)
+    {
+        if (body is null)
+        {
+            AddBlock(Result.Failure<IBlock>(Error.NullValue));
+            return Self;
+        }
+
+        if (condition)
+        {
+            body(Self);
+        }
+
+        return Self;
+    }
+
+    /// <summary>Runs <paramref name="body"/> only when <paramref name="condition"/> is false.</summary>
+    public TSelf Unless(bool condition, Action<TSelf> body) => When(!condition, body);
+
+    /// <summary>Appends the blocks produced by a reusable component for each model in turn.</summary>
+    public TSelf Components<TModel>(IEnumerable<TModel> models, IBlockComponent<TModel> component)
+    {
+        if (models is null || component is null)
+        {
+            AddBlocks(Result.Failure<IReadOnlyList<IBlock>>(Error.NullValue));
+            return Self;
+        }
+
+        foreach (var model in models)
+        {
+            Component(component, model);
+        }
+
         return Self;
     }
 

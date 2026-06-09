@@ -10,4 +10,13 @@
     <PackageReference Include="itext7" />
   </ItemGroup>
 
+  <!-- On the 2023 line QuestPDF does not bring the SkiaSharp/HarfBuzz Linux native assets (it
+       expects the host to add them); 2024 bundles them, so nothing is needed by default. This
+       mirrors how iText 8 splits BouncyCastle into a separate package — the package topology,
+       not just the version, changes across majors. -->
+  <ItemGroup Condition="'$(QuestPdfMajor)' == '2023'">
+    <PackageReference Include="SkiaSharp.NativeAssets.Linux.NoDependencies" />
+    <PackageReference Include="HarfBuzzSharp.NativeAssets.Linux" />
+  </ItemGroup>
+
 </Project>

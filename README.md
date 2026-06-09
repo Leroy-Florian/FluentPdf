@@ -266,21 +266,24 @@ property, so it costs nothing at runtime and nothing for a consumer (who still i
 package at the pinned version).
 
 ```bash
-# Default — the pinned, shipped version:
-dotnet test tests/FluentPdf.Adapters.iText.ConformanceTests                  # iText 8.0.x
+# Default — the pinned, shipped versions:
+dotnet test tests/FluentPdf.Adapters.iText.ConformanceTests                       # iText 8.0.x
+dotnet test tests/FluentPdf.Adapters.QuestPdf.ConformanceTests                    # QuestPDF 2024.x
 
 # The very same source, against the previous major:
-dotnet test tests/FluentPdf.Adapters.iText.ConformanceTests -p:ITextMajor=7  # iText 7.2.x
+dotnet test tests/FluentPdf.Adapters.iText.ConformanceTests -p:ITextMajor=7       # iText 7.2.x
+dotnet test tests/FluentPdf.Adapters.QuestPdf.ConformanceTests -p:QuestPdfMajor=2023  # QuestPDF 2023.x
 ```
 
 | Adapter | Majors proven by the conformance kit | Why it's more than a version bump |
 |---------|--------------------------------------|-----------------------------------|
-| `FluentPdf.Adapters.iText` | **7.2.x** and **8.0.x** | The *package topology* differs: iText 8 splits BouncyCastle into a standalone `itext7.bouncy-castle-adapter`, while 7.2.x brings it transitively through `itext7`. So `$(ITextMajor)` selects the **references**, not merely the version. |
+| `FluentPdf.Adapters.iText` | **7.2.x** and **8.0.x** (`$(ITextMajor)`) | The *package topology* differs: iText 8 splits BouncyCastle into a standalone `itext7.bouncy-castle-adapter`, while 7.2.x brings it transitively through `itext7`. So the property selects the **references**, not merely the version. |
+| `FluentPdf.Adapters.QuestPdf` | **2023.12.x** and **2024.12.x** (`$(QuestPdfMajor)`) | Same story, different library: QuestPDF 2024 bundles the SkiaSharp/HarfBuzz **Linux native assets**, while 2023.x expects the host to add them — so the 2023 line pulls those native packages in, the 2024 line does not. |
 
-The [`ci`](.github/workflows/ci.yml) workflow runs the iText conformance suite once per major
-(an `ITextMajor` build matrix), so a regression on either line fails the build. The same
-property-driven pattern extends to the other adapters (e.g. a `$(QuestPdfVersion)` dimension
-for QuestPDF) without touching a line of adapter code.
+The [`ci`](.github/workflows/ci.yml) workflow runs the conformance suites once **per major** of
+each adapter (a single `adapter-version-matrix` build matrix), so a regression on any supported
+line fails the build. Adding a new line — or a new adapter to the matrix — is a one-row change
+and **not a single line of adapter code**.
 
 Layering (enforced by `FluentPdf.ArchitectureTests`):
 

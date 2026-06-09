@@ -17,6 +17,11 @@
     <!-- Chart drawing shared by the real adapters. -->
     <PackageVersion Include="SkiaSharp" Version="2.88.9" />
     <PackageVersion Include="SkiaSharp.NativeAssets.Linux" Version="2.88.9" />
+    <!-- QuestPDF 2023.x does not bundle the SkiaSharp/HarfBuzz Linux native assets (2024 does),
+         so the runtime host supplies them on that line. Matched to QuestPDF 2023.12.6's
+         SkiaSharp 2.88.7 / HarfBuzzSharp 7.3.0.1. -->
+    <PackageVersion Include="SkiaSharp.NativeAssets.Linux.NoDependencies" Version="2.88.7" />
+    <PackageVersion Include="HarfBuzzSharp.NativeAssets.Linux" Version="7.3.0.1" />
   </ItemGroup>
 
   <ItemGroup Label="Test Dependencies">

@@ -174,7 +174,7 @@ See [`samples/FluentPdf.Samples`](samples/FluentPdf.Samples) for the full, compi
 | `FluentPdf.Conformance` | The shared contract-test kit every adapter must pass. |
 | `FluentPdf.Adapters.Shared` | Shared adapter support — embedded **Liberation Sans** font and the `RenderingTheme` (table borders, header shading, palette). **Pure managed, no native deps.** |
 | `FluentPdf.Adapters.QuestPdf` | Real adapter backed by **QuestPDF**. Maps the model onto QuestPDF's layout; page-number fields use QuestPDF's native counters. |
-| `FluentPdf.Adapters.iText` | Real adapter backed by **iText 7**. Maps the model onto iText elements; headers/footers and "Page X of Y" are drawn once the page count is known. |
+| `FluentPdf.Adapters.iText` | Real adapter backed by **iText** (7.2.x and 8.x — see the version matrix below). Maps the model onto iText elements; headers/footers and "Page X of Y" are drawn once the page count is known. |
 | `FluentPdf.Charting.Skia` | **Optional** SkiaSharp `IChartRenderer` (chart → PNG). Reference it only to render charts; this is the *only* package that pulls SkiaSharp. |
 | `FluentPdf.Visual` | A PDF visual-comparison engine (PDFium rasterisation): per-page similarity / SSIM scoring and red diff heatmaps. **Tooling only — never shipped to consumers.** |
 
@@ -242,7 +242,7 @@ they want. Everything else is pulled in transitively — and the core never drag
 | `FluentPdf.Conformance` | `FluentPdf`, xUnit | you author an adapter and want the contract tests |
 | `FluentPdf.Adapters.Shared` | `FluentPdf` (fonts/theme, no native) | (transitive via an adapter) |
 | **`FluentPdf.Adapters.QuestPdf`** | `…Shared`, QuestPDF | **you render with QuestPDF** |
-| **`FluentPdf.Adapters.iText`** | `…Shared`, iText 7 | **you render with iText** |
+| **`FluentPdf.Adapters.iText`** | `…Shared`, iText (7.2.x / 8.x) | **you render with iText** |
 | `FluentPdf.Charting.Skia` | `FluentPdf`, `…Shared`, SkiaSharp | **only if you need charts** |
 
 ```bash
@@ -255,6 +255,35 @@ brings its library (the QuestPDF adapter never pulls iText, and vice-versa), and
 arrives only via the optional charting package**. `dotnet pack
 FluentPdf.slnx` builds the whole family; the [`release`](.github/workflows/release.yml)
 workflow packs and pushes them to NuGet on a published release.
+
+### Library version compatibility
+
+A heavily-used PDF library ships breaking major versions — and sometimes reorganises its
+packages — on its own schedule. FluentPdf treats *which major of a library an adapter supports*
+as a **tested matrix**, not a hope: the **same adapter source** is compiled and run through the
+full `PdfRendererContractTests` against more than one major. The selection is an MSBuild
+property, so it costs nothing at runtime and nothing for a consumer (who still installs one
+package at the pinned version).
+
+```bash
+# Default — the pinned, shipped versions:
+dotnet test tests/FluentPdf.Adapters.iText.ConformanceTests                       # iText 8.0.x
+dotnet test tests/FluentPdf.Adapters.QuestPdf.ConformanceTests                    # QuestPDF 2024.x
+
+# The very same source, against the previous major:
+dotnet test tests/FluentPdf.Adapters.iText.ConformanceTests -p:ITextMajor=7       # iText 7.2.x
+dotnet test tests/FluentPdf.Adapters.QuestPdf.ConformanceTests -p:QuestPdfMajor=2023  # QuestPDF 2023.x
+```
+
+| Adapter | Majors proven by the conformance kit | Why it's more than a version bump |
+|---------|--------------------------------------|-----------------------------------|
+| `FluentPdf.Adapters.iText` | **7.2.x** and **8.0.x** (`$(ITextMajor)`) | The *package topology* differs: iText 8 splits BouncyCastle into a standalone `itext7.bouncy-castle-adapter`, while 7.2.x brings it transitively through `itext7`. So the property selects the **references**, not merely the version. |
+| `FluentPdf.Adapters.QuestPdf` | **2023.12.x** and **2024.12.x** (`$(QuestPdfMajor)`) | Same story, different library: QuestPDF 2024 bundles the SkiaSharp/HarfBuzz **Linux native assets**, while 2023.x expects the host to add them — so the 2023 line pulls those native packages in, the 2024 line does not. |
+
+The [`ci`](.github/workflows/ci.yml) workflow runs the conformance suites once **per major** of
+each adapter (a single `adapter-version-matrix` build matrix), so a regression on any supported
+line fails the build. Adding a new line — or a new adapter to the matrix — is a one-row change
+and **not a single line of adapter code**.
 
 Layering (enforced by `FluentPdf.ArchitectureTests`):
 

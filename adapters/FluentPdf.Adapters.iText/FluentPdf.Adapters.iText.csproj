@@ -4,9 +4,17 @@
     <TargetFrameworks>net8.0;net10.0</TargetFrameworks>
     <RootNamespace>FluentPdf.Adapters.IText</RootNamespace>
     <AssemblyName>FluentPdf.Adapters.iText</AssemblyName>
-    <Description>iText 7 renderer adapter for FluentPdf: renders the agnostic document model to PDF with iText.</Description>
-    <!-- itext7.bouncy-castle-adapter pulls a transitively-flagged BouncyCastle build. -->
+    <Description>iText renderer adapter for FluentPdf: renders the agnostic document model to PDF with iText (7.2.x and 8.x).</Description>
+    <!-- iText pulls a transitively-flagged BouncyCastle build. -->
     <NuGetAudit>false</NuGetAudit>
+
+    <!-- The major iText version this adapter is compiled and tested against. Defaults to 8 (the
+         pinned, shipped version); pass -p:ITextMajor=7 to build and run the conformance kit
+         against the 7.2.x line, proving a single adapter source supports both majors. The
+         package topology differs between them: iText 8 splits BouncyCastle into a standalone
+         itext7.bouncy-castle-adapter package, whereas 7.2.x brings it transitively through
+         itext7 — so the references, not just the version, are selected per major. -->
+    <ITextMajor Condition="'$(ITextMajor)' == ''">8</ITextMajor>
   </PropertyGroup>
 
   <ItemGroup>
@@ -14,9 +22,21 @@
     <ProjectReference Include="../FluentPdf.Adapters.Shared/FluentPdf.Adapters.Shared.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
+  <!-- iText 8 (default): the pinned 8.0.x with the standalone BouncyCastle adapter package. -->
+  <ItemGroup Condition="'$(ITextMajor)' == '8'">
     <PackageReference Include="itext7" />
     <PackageReference Include="itext7.bouncy-castle-adapter" />
   </ItemGroup>
+
+  <!-- iText 7.2.x: BouncyCastle arrives transitively through itext7 (no separate adapter). -->
+  <ItemGroup Condition="'$(ITextMajor)' == '7'">
+    <PackageReference Include="itext7" VersionOverride="7.2.6" />
+  </ItemGroup>
+
+  <!-- Fail fast on an unsupported value rather than a confusing "no PDF library" compile error. -->
+  <Target Name="ValidateITextMajor" BeforeTargets="CollectPackageReferences"
+          Condition="'$(ITextMajor)' != '7' AND '$(ITextMajor)' != '8'">
+    <Error Text="ITextMajor must be '7' or '8' (was '$(ITextMajor)')." />
+  </Target>
 
 </Project>

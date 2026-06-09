@@ -4,7 +4,13 @@
     <TargetFrameworks>net8.0;net10.0</TargetFrameworks>
     <RootNamespace>FluentPdf.Adapters.QuestPdf</RootNamespace>
     <AssemblyName>FluentPdf.Adapters.QuestPdf</AssemblyName>
-    <Description>QuestPDF renderer adapter for FluentPdf: renders the agnostic document model to PDF with QuestPDF.</Description>
+    <Description>QuestPDF renderer adapter for FluentPdf: renders the agnostic document model to PDF with QuestPDF (2023.x and 2024.x).</Description>
+
+    <!-- The QuestPDF release line this adapter is compiled and tested against. Defaults to 2024
+         (the pinned, shipped version); pass -p:QuestPdfMajor=2023 to build and run the
+         conformance kit against the 2023.12.x line, proving a single adapter source supports
+         both. QuestPDF uses calendar versioning, so the "major" is the release year. -->
+    <QuestPdfMajor Condition="'$(QuestPdfMajor)' == ''">2024</QuestPdfMajor>
   </PropertyGroup>
 
   <ItemGroup>
@@ -12,8 +18,20 @@
     <ProjectReference Include="../FluentPdf.Adapters.Shared/FluentPdf.Adapters.Shared.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
+  <!-- QuestPDF 2024 (default): the pinned 2024.12.x. -->
+  <ItemGroup Condition="'$(QuestPdfMajor)' == '2024'">
     <PackageReference Include="QuestPDF" />
   </ItemGroup>
+
+  <!-- QuestPDF 2023.12.x: the previous release line (same Community licensing model). -->
+  <ItemGroup Condition="'$(QuestPdfMajor)' == '2023'">
+    <PackageReference Include="QuestPDF" VersionOverride="2023.12.6" />
+  </ItemGroup>
+
+  <!-- Fail fast on an unsupported value rather than a confusing "no PDF library" compile error. -->
+  <Target Name="ValidateQuestPdfMajor" BeforeTargets="CollectPackageReferences"
+          Condition="'$(QuestPdfMajor)' != '2023' AND '$(QuestPdfMajor)' != '2024'">
+    <Error Text="QuestPdfMajor must be '2023' or '2024' (was '$(QuestPdfMajor)')." />
+  </Target>
 
 </Project>

@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="../../src/FluentPdf.Conformance/FluentPdf.Conformance.csproj" />
+    <ProjectReference Include="../../adapters/FluentPdf.Adapters.PdfSharp/FluentPdf.Adapters.PdfSharp.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Read-only text extraction from the rendered bytes for the contract assertions. -->
+    <PackageReference Include="itext7" />
+  </ItemGroup>
+
+</Project>

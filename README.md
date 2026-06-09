@@ -175,12 +175,13 @@ See [`samples/FluentPdf.Samples`](samples/FluentPdf.Samples) for the full, compi
 | `FluentPdf.Adapters.Shared` | Shared adapter support — embedded **Liberation Sans** font and the `RenderingTheme` (table borders, header shading, palette). **Pure managed, no native deps.** |
 | `FluentPdf.Adapters.QuestPdf` | Real adapter backed by **QuestPDF**. Maps the model onto QuestPDF's layout; page-number fields use QuestPDF's native counters. |
 | `FluentPdf.Adapters.iText` | Real adapter backed by **iText 7**. Maps the model onto iText elements; headers/footers and "Page X of Y" are drawn once the page count is known. |
+| `FluentPdf.Adapters.PdfSharp` | Real adapter backed by **PDFsharp/MigraDoc** (MIT, **fully managed — no native deps**). Maps the model onto MigraDoc's document-flow model; MigraDoc paginates and resolves running headers/footers and page-number fields. |
 | `FluentPdf.Charting.Skia` | **Optional** SkiaSharp `IChartRenderer` (chart → PNG). Reference it only to render charts; this is the *only* package that pulls SkiaSharp. |
 | `FluentPdf.Visual` | A PDF visual-comparison engine (PDFium rasterisation): per-page similarity / SSIM scoring and red diff heatmaps. **Tooling only — never shipped to consumers.** |
 
-Both real adapters pass the same `PdfRendererContractTests` as the reference adapter, and share
-a deliberate design so their output is **visually consistent** (same embedded font ⇒ identical
-glyph metrics; same table styling from `RenderingTheme`).
+All three real adapters pass the same `PdfRendererContractTests` as the reference adapter, and
+share a deliberate design so their output is **visually consistent** (same embedded font ⇒
+identical glyph metrics; same table styling from `RenderingTheme`).
 
 **Charts are opt-in.** An adapter renders charts only when given an `IChartRenderer`
 (`new QuestPdfRenderer(new SkiaChartRenderer())`); without one it declares the `Chart`
@@ -196,8 +197,8 @@ Two layout engines never produce byte-identical pixels (sub-pixel positioning an
 algorithms differ), so the visual engine is for **regression** — compare an adapter's output
 to a stored golden, identical ⇒ similarity `1.0` — and for **human review** via a red diff
 heatmap. The adapter integration tests render the real samples (invoice, financial report
-with charts, 30-page contract) through QuestPDF and iText, confirm each is a valid, non-blank
-PDF whose text is present, and produce a diff for inspection.
+with charts, 30-page contract) through **every** adapter (QuestPDF, iText and PDFsharp),
+confirm each is a valid, non-blank PDF whose text is present, and produce a diff for inspection.
 
 ### CI quality gate
 
@@ -243,6 +244,7 @@ they want. Everything else is pulled in transitively — and the core never drag
 | `FluentPdf.Adapters.Shared` | `FluentPdf` (fonts/theme, no native) | (transitive via an adapter) |
 | **`FluentPdf.Adapters.QuestPdf`** | `…Shared`, QuestPDF | **you render with QuestPDF** |
 | **`FluentPdf.Adapters.iText`** | `…Shared`, iText 7 | **you render with iText** |
+| **`FluentPdf.Adapters.PdfSharp`** | `…Shared`, PDFsharp/MigraDoc | **you render with PDFsharp (MIT, no native deps)** |
 | `FluentPdf.Charting.Skia` | `FluentPdf`, `…Shared`, SkiaSharp | **only if you need charts** |
 
 ```bash

@@ -1,4 +1,5 @@
 using FluentPdf.Adapters.IText;
+using FluentPdf.Adapters.PdfSharp;
 using FluentPdf.Adapters.QuestPdf;
 using FluentPdf.Application.Rendering;
 using FluentPdf.Charting.Skia;
@@ -40,6 +41,7 @@ var adapters = new (string Name, IPdfRenderer Renderer)[]
 {
     ("questpdf", new QuestPdfRenderer(charts)),
     ("itext", new ITextRenderer(charts)),
+    ("pdfsharp", new PdfSharpRenderer(charts)),
 };
 
 var rasterizer = new PdfRasterizer(700, 990);
